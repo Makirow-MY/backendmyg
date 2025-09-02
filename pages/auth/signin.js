@@ -90,8 +90,8 @@ setTimeout(async () => {
       
 
         toast.dismiss()
-        window.localStorage.setItem("UserEmail");
-        toast.success(`Welcome Back ${form.email}`)
+    console.log("Result", result)
+        toast.success(`Welcome Back ${ name || form.email}`)
          router.push("/")
       }
       else{
