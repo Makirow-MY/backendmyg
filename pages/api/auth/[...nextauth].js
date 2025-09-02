@@ -1,7 +1,7 @@
 import connectToDatabase from "@/lib/mongodb";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import jwt from 'jsonwebtoken';
+
 export default NextAuth({
     providers:[
          Credentials({
