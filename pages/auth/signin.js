@@ -103,7 +103,7 @@ setTimeout(async () => {
        toast.error(error.message)
      }
 
-}, 3000);
+}, 2000);
 
   }
   return (

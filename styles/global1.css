@@ -893,7 +893,7 @@ input{
 }
 
 .opti{
-    color: #fff;
+    color: var(--pure-white);
 }
 
 .dark .opti{
@@ -977,6 +977,7 @@ input{
  .dide{
         display: none;
     }
+    
 @media (max-width: 576px) {
      .dide{
         display: block;

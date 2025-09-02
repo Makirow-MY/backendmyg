@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   const { method } = req;
 
   if (method === "POST") {
-    const { email, password, fullName, image, phoneNumber, Country, userEmail, ...otherFields } = req.body;
+    const { email, password, fullName, image, phoneNumber, Country, userEmail  } = req.body;
 
     if (userEmail) {
       try {
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
         phoneNumber,
         Country,
         image: image || `https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/${gender}/512/${imageNumber}.jpg`,
-        ...otherFields,
+        token: faker.string.uuid(),  
       });
 
       res.status(200).json({

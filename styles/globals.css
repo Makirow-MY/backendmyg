@@ -1180,20 +1180,12 @@ button {
     background: var(--dark-site-secondary) !important;
     border-radius: 40px;
     padding: 25px 35px;
-    border: 5px solid rgb(0, 0, 0);
+    border: var(--pure-white);
     box-shadow: var( --primary-color) 0px 10px 30px -20px;
     margin: 20px;
 }
 
-.dark .loginform {
-    width: 650px;
-    background: #F8F9FD;
-    border-radius: 40px;
-    padding: 25px 35px;
-    border: 5px solid rgb(255, 255, 255) !important;
-    box-shadow: var( --primary-color) 0px 10px 30px -20px;
-    margin: 20px;
-}
+
 .overflow-hidden{
     overflow: hidden;
    height: 100%;
@@ -1232,7 +1224,7 @@ button {
     border: none;
     padding: 15px 20px;
     border-radius: 20px;
-    color: #ffffff;
+    color: var(--pure-white);
     font-size: 16px !important;
     margin-top: 15px;
     border-inline: 2px solid transparent;
@@ -1255,7 +1247,7 @@ p.err{
 
 .form .input::placeholder {
     color: rgb(170, 170, 170);
-    font-size: 18px;
+    font-size: 15px;
 }
 
 .form .input:focus {
@@ -1293,6 +1285,7 @@ p.err{
     display: block;
     text-align: center;
     margin-top: 15px;
+    color: white !important;
 }
 
 .agreement a {
