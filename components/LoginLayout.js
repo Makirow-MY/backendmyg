@@ -30,9 +30,10 @@ export default function LoginLayout({children}) {
      }
 
     if (session) {
+      console.log("Session", session)
         window.localStorage.setItem("UserEmail", session.user.email)
-        window.localStorage.setItem("UserName", !userName ? session.user.name : userName)
-        window.localStorage.setItem("UserImage", `https://ui-avatars.com/api/?name=${!userName ? session.user.name : userName}&background=random`)
+        window.localStorage.setItem("UserName",  session.user.name)
+        window.localStorage.setItem("UserImage", session.user.image)
         return   <>
         
         {children}

@@ -8,17 +8,25 @@ const NotificationSchema = new Schema({
   },
   model: {
     type: String,
-    enum: ['Blog', 'Comment', 'Contact', 'Project', 'Review', 'Transaction'],
+    enum: ['Blog', 'Comment', 'Contact', 'Project', 'Review', 'Transaction', 'Profile'],
     required: true
   },
   dataId: {
     type: Schema.Types.ObjectId,
     required: true
   },
-  message: {
+  title: {
     type: String,
     required: true
   },
+    message: {
+    type: String,
+    required: true
+  },
+  createdDate:{
+    type: Date,
+    default: Date.now
+ },
   read: {
     type: Boolean,
     default: false
