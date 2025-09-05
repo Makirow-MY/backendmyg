@@ -15,10 +15,6 @@ import { NotificationContext, NotificationProvider } from "@/components/Notifica
 import axios from "axios";
 import io from 'socket.io-client';
 
-// export const SearchContext = createContext();
-
-// export const useSearch = () => useContext(SearchContext);
-
 export default function App({ Component, pageProps: {session, ...pageProps}  }) {
 
   const [asideOpen, setAsideOpen] = useState(true)
@@ -63,59 +59,6 @@ router.events.off("routeChangeError", handleComplete)
     const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    const newSocket = io('http://localhost:3000/'); // Adjust URL if your socket server is on a different port/domain
-    setSocket(newSocket);
-
-    newSocket.on('new_notification', (notif) => {
-      setNotifications((prev) => [notif, ...prev]);
-      setUnreadCount((prev) => prev + 1);
-    });
-
-    fetchNotifications();
-    fetchUnreadCount();
-
-    return () => newSocket.disconnect();
-  }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await axios.get('/api/notification/seed.js');
-      setNotifications(res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    try {
-      const res = await axios.get('/api/notifications/unread');
-      setUnreadCount(res.data.count);
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
-    }
-  };
-
-  const markAllRead = async () => {
-    try {
-      await axios.put('/api/notifications/mark-read');
-      setUnreadCount(0);
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    } catch (error) {
-      console.error('Error marking all as read:', error);
-    }
-  };
-
-  const markRead = async (id) => {
-    try {
-      await axios.put(`/api/notifications/${id}/read`);
-      setUnreadCount((prev) => prev - 1);
-      setNotifications((prev) => prev.map((n) => (n._id === id ? { ...n, read: true } : n)));
-    } catch (error) {
-      console.error('Error marking as read:', error);
-    }
-  };
 
   const AsideOpener = () =>{
       setAsideOpen(!asideOpen)
