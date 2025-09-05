@@ -142,7 +142,7 @@ export default function Setting() {
                   <div className="galaxy-grid">
                     <div className="nebula-bg" style={{ width: '250px', height: '200px' }}>
                       <img
-                        src={`https://ui-avatars.com/api/?name=${userData.fullName}&background=random`}
+                        src={`https://atars.com/api/?name=${userData.fullName}&background=random`}
                         alt={userData.fullName}
                         className="project-preview-image"
                       />

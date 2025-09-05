@@ -72,43 +72,43 @@ export default async function handleproj(req, res) {
       }
     });
   } else if (method === "GET") {
-       try {
-        for (const project of defaultProjects) {
+      //  try {
+      //   for (const project of defaultProjects) {
         
-          const existingProject = await Project.findOne({  $and: [
-        { slug: project.slug },
-        { title: project.title }
-      ] });
-          if (!existingProject) {
-            const createdProject = await Project.create(project);
-          //  console.log(`Created Project "${project.title}" with ID: ${createdProject._id}`);
+      //     const existingProject = await Project.findOne({  $and: [
+      //   { slug: project.slug },
+      //   { title: project.title }
+      // ] });
+      //     if (!existingProject) {
+      //       const createdProject = await Project.create(project);
+      //     //  console.log(`Created Project "${project.title}" with ID: ${createdProject._id}`);
     
-            const reviews = generateRandomReviews(project, createdProject._id);
-            const reviewIds = [];
+      //       const reviews = generateRandomReviews(project, createdProject._id);
+      //       const reviewIds = [];
     
-            for (const review of reviews) {
-              try {
-                const createdReview = await Review.create(review);
-                reviewIds.push(createdReview._id);
-              //  console.log(`Created Review for Project "${project.title}"`);
-              } catch (reviewError) {
-               // console.error(`Error creating review for Project "${project.title}":`, reviewError);
-              }
-            }
+      //       for (const review of reviews) {
+      //         try {
+      //           const createdReview = await Review.create(review);
+      //           reviewIds.push(createdReview._id);
+      //         //  console.log(`Created Review for Project "${project.title}"`);
+      //         } catch (reviewError) {
+      //          // console.error(`Error creating review for Project "${project.title}":`, reviewError);
+      //         }
+      //       }
     
-            await Project.updateOne(
-              { _id: createdProject._id },
-              { $set: { review: reviewIds } }
-            );
-          //  console.log(`Updated Project "${project.title}" with ${reviewIds.length} review IDs`);
-          } else {
-            //console.log(`Project "${project.title}" already exists, skipping review creation`);
-          }
-        }
-      } catch (error) {
-       // console.error('Error populating default projects or reviews:', error);
-        throw error;
-      }
+      //       await Project.updateOne(
+      //         { _id: createdProject._id },
+      //         { $set: { review: reviewIds } }
+      //       );
+      //     //  console.log(`Updated Project "${project.title}" with ${reviewIds.length} review IDs`);
+      //     } else {
+      //       //console.log(`Project "${project.title}" already exists, skipping review creation`);
+      //     }
+      //   }
+      // } catch (error) {
+      //  // console.error('Error populating default projects or reviews:', error);
+      //   throw error;
+      // }
     if (req.query?.id) {
       
       const project = await Project.findById(req.query.id);

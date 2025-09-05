@@ -72,7 +72,7 @@ router.events.off("routeChangeError", handleComplete)
      loading ? (
         <div className="flex flex-col flex-center wh_100">
           <Loading />
-          <h1 className="mt-1">Loading...</h1>
+          
         </div>
      ) : 
      (<>
