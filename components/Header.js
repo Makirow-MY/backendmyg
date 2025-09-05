@@ -19,7 +19,7 @@ export default function Header({ onToggleSidebar, isOpen, setSearch, search }) {
   const router = useRouter();
   const [dark, setDark] = useState(false);
   const [active, setActive] = useState(router.pathname);
-  const { notifications, unreadCount, markAllRead, markRead } = useNotification(); // Get unread count from context
+ // const { notifications, unreadCount, markAllRead, markRead } = useNotification(); // Get unread count from context
 
   const handleSignOut = () => {
     signOut();

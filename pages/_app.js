@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState, createContext, useContext } from "react";
 import { Toaster } from "react-hot-toast";
 import { SearchContext } from "../components/search";
-import { NotificationContext, NotificationProvider } from "@/components/NotificationContext";
+//import { NotificationContext, NotificationProvider } from "@/components/NotificationContext";
 import axios from "axios";
 import io from 'socket.io-client';
 
@@ -79,8 +79,6 @@ router.events.off("routeChangeError", handleComplete)
 
 
 <SessionProvider session={session}> 
- <NotificationContext.Provider value={{ notifications, setNotifications, unreadCount, markAllRead, markRead }}>
-     
        <div>
               <Header setSearch={setSearch}
               search={search}
@@ -88,7 +86,7 @@ router.events.off("routeChangeError", handleComplete)
                onToggleSidebar={() => setAsideOpen(!asideOpen)} />
               <Aside isOpen={asideOpen} />
         </div>
-</NotificationContext.Provider>
+
 </SessionProvider>
   
 
@@ -101,9 +99,8 @@ router.events.off("routeChangeError", handleComplete)
    
     <SessionProvider session={session}> 
    <SearchContext.Provider value={{ search, setSearch }}>
-      <NotificationContext.Provider value={{ notifications, unreadCount, markAllRead, markRead }}>
        <Component {...pageProps}   />
-       </NotificationContext.Provider>
+     
     </SearchContext.Provider>
 
       
