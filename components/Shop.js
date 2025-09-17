@@ -41,6 +41,7 @@ const uploadedImagesQueue = [];
 
 async function createBlog(data) {
     data.preventDefault()
+    toast.loading("Creating Project...")
     if (isUploading) {
         await Promise.all(uploadedImagesQueue)
     }

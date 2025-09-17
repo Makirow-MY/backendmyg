@@ -106,6 +106,7 @@ export default function Project({
 
   async function createBlog(e) {
     e.preventDefault();
+    
     if (isUploading) return;
     const userData = {
       title, slug, images: images.map(img => img.url), price, description,
@@ -115,9 +116,11 @@ export default function Project({
     };
     try {
       if (_id) {
+         toast.loading("Updating Project...")
         await axios.put("/api/projects", { ...userData, _id });
         toast.success('Project updated');
       } else {
+        toast.loading("Creating Project...")
         await axios.post("/api/projects", userData);
         toast.success('Project created');
       }
@@ -161,6 +164,11 @@ export default function Project({
 
   async function deleteImage(image) {
     try {
+       if (image.url) {
+                // If image object is malformed
+                setImages(prevImages => prevImages.filter(img => img !== image));
+                return;
+            }
       if (image.type === 'uploaded') {
         await axios.delete(`/api/upload?imageUrl=${image.url}&id=${_id}`);
         toast.success('Image deleted');
@@ -364,7 +372,7 @@ export default function Project({
                 <div key={index} className='uploadedimg'>
                   <img loading='lazy' src={image.url} alt={`Project ${index + 1}`} className='object-cover' />
                   <div className='deleteimg'>
-                    <button type='button' onClick={() => deleteImage(image)}><IoTrash /></button>
+                    <button type='button' onClick={() => deleteImage(image || image.url)}><IoTrash /></button>
                   </div>
                 </div>
               ))}
@@ -378,7 +386,7 @@ export default function Project({
               <div key={index} className='uploadedimg'>
                 <img loading='lazy' src={image.url} alt={`Project ${index + 4}`} className='object-cover' />
                 <div className='deleteimg'>
-                  <button type='button' onClick={() => deleteImage(image)}><IoTrash /></button>
+                  <button type='button' onClick={() => deleteImage(image || image.url)}><IoTrash /></button>
                 </div>
               </div>
             ))}

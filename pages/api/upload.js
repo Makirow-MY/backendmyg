@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDirs = [
             'public/uploads',
-            '../FRONTEND/public/uploads'
+            
         ];
         
         // Create directories if they don't exist
@@ -73,10 +73,10 @@ export default async function handleproj(req, res) {
                         req.files.forEach(file => {
                             try {
                                 fs.unlinkSync(file.path);
-                                const frontendPath = path.join('../FRONTEND/public/uploads', file.filename);
-                                if (fs.existsSync(frontendPath)) {
-                                    fs.unlinkSync(frontendPath);
-                                }
+                                // const frontendPath = path.join('../FRONTEND/public/uploads', file.filename);
+                                // if (fs.existsSync(frontendPath)) {
+                                //     fs.unlinkSync(frontendPath);
+                                // }
                             } catch (cleanupErr) {
                                 console.error('Error cleaning up file:', cleanupErr);
                             }
@@ -107,10 +107,10 @@ export default async function handleproj(req, res) {
                     }
 
                     // Copy files to frontend directory
-                    req.files.forEach(file => {
-                        const frontendPath = path.join('../FRONTEND/public/uploads', file.filename);
-                        fs.copyFileSync(file.path, frontendPath);
-                    });
+                    // req.files.forEach(file => {
+                    //     const frontendPath = path.join('../FRONTEND/public/uploads', file.filename);
+                    //     fs.copyFileSync(file.path, frontendPath);
+                    // });
 
                     // Return paths relative to backend public/uploads
                     const uploadedImages = req.files.map(file => {
@@ -128,10 +128,10 @@ export default async function handleproj(req, res) {
                     req.files?.forEach(file => {
                         try {
                             fs.unlinkSync(file.path);
-                            const frontendPath = path.join('../FRONTEND/public/uploads', file.filename);
-                            if (fs.existsSync(frontendPath)) {
-                                fs.unlinkSync(frontendPath);
-                            }
+                            // const frontendPath = path.join('../FRONTEND/public/uploads', file.filename);
+                            // if (fs.existsSync(frontendPath)) {
+                            //     fs.unlinkSync(frontendPath);
+                            // }
                         } catch (cleanupErr) {
                             console.error('Error cleaning up file:', cleanupErr);
                         }
@@ -168,23 +168,25 @@ export default async function handleproj(req, res) {
 
             const filename = path.basename(imageUrl);
             const backendPath = path.join(process.cwd(), 'public/uploads', filename);
-            const frontendPath = path.join(process.cwd(), '../FRONTEND/public/uploads', filename);
+           // const frontendPath = path.join(process.cwd(), '../FRONTEND/public/uploads', filename);
 
             // Delete from both locations
             let backendDeleted = false;
-            let frontendDeleted = false;
+          //  let frontendDeleted = false;
 
             if (fs.existsSync(backendPath)) {
                 fs.unlinkSync(backendPath);
                 backendDeleted = true;
             }
 
-            if (fs.existsSync(frontendPath)) {
-                fs.unlinkSync(frontendPath);
-                frontendDeleted = true;
-            }
+            // if (fs.existsSync(frontendPath)) {
+            //     fs.unlinkSync(frontendPath);
+            //     frontendDeleted = true;
+            // }
 
-            if (!backendDeleted && !frontendDeleted) {
+            if (!backendDeleted
+                // && !frontendDeleted
+                ) {
                 const project = await Project.findById(id)
                 const blog = await Blog.findById(id)
                 if (project) {
@@ -208,7 +210,7 @@ export default async function handleproj(req, res) {
 
             return res.json({ 
                 success: true,
-                message: `File deleted ${backendDeleted ? 'from backend' : ''}${backendDeleted && frontendDeleted ? ' and ' : ''}${frontendDeleted ? 'from frontend' : ''}`
+                message: `File deleted ${backendDeleted ? 'from backend' : ''}${backendDeleted ? ' and ' : ''}`
             });
         } catch (error) {
             console.error('Error deleting image:', error);

@@ -79,7 +79,9 @@ export default function Setting() {
   // Handle form submission to update user data
   const handleSubmit = async (e) => {
     e.preventDefault();
+   
     try {
+      toast.loading("Updating User...")
       const res = await axios.put(`/api/auth/signup`, {
         userEmail: userData.email,
         ...userData,

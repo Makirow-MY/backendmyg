@@ -7,7 +7,7 @@ export default function Process() {
 
     useEffect(() => {
        setTimeout(() => {        
-            router.push('/projects');        
+            router.push('/notification');        
            
        }, 200);
     }, [])

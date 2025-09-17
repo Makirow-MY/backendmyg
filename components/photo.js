@@ -32,12 +32,14 @@ const uploadedImagesQueue = [];
 
 async function createBlog(data) {
     data.preventDefault()
+    toast.loading("Creating Project...")
     if (isUploading) {
         await Promise.all(uploadedImagesQueue)
     }
 
     const userData = {title, slug, images};
     if (_id) {
+         toast.loading("Updating Blog...")
         await axios.put("/api/photos", {...userData, _id})
         toast.success('Data updated')
        // router.push("/blogs") 

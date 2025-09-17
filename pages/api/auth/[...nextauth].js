@@ -1,51 +1,75 @@
-import connectToDatabase from "@/lib/mongodb";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { neon } from '@netlify/neon';
+import { mongooseConnect } from "@/lib/mongoose";
+import { Profile } from "@/models/Profile";
+
+const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use process.env.DATABASE_URL if needed
+
 
 export default NextAuth({
-    providers:[
-         Credentials({
-            name:'credentials',
-            credentials: {
-                fullName: {label: 'Full Name', type: 'text'},
-                email: {label: 'Email', type:'text'},
-                password: {label: 'Password', type: 'password'},
-               
-            },
-            async authorize(credentials, req) {
-                  const db = await connectToDatabase();
-                  const collection = db.collection('admin')
-            
-                    const user = await collection.findOne({email: credentials.email});
-
-                    
-                    if (user && user.password === credentials.password) {
-                        return {_id: user._id, email: user.email, name: user.fullName, image: user.image, phoneNumber: user.phoneNumber, Country: user.Country};
-                    }
-
-                    return null
-
-                }
-         })
-    ],
-    database: process.env.MONGODB_URI,
-
-    callbacks:{
-       async jwt({token, user}) {
-           if (user) {
-                token._id = user._id;              
-                       
-           }
-                      return token
-        },
-
-        async session({session, token}) {
-            session.user._id = token._id;
-            return session ; 
+  providers: [
+    Credentials({
+      name: 'credentials',
+      credentials: {
+        fullName: { label: 'Full Name', type: 'text' },
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials, req) {
+        await mongooseConnect();
+        let user = null;
+        
+        // Try Neon first
+        try {
+          const pgUsers = await sql`SELECT * FROM profiles WHERE email = ${credentials.email}`;
+          if (pgUsers.length > 0 && pgUsers[0].password === credentials.password) {
+            const pgUser = pgUsers[0];
+            user = {
+              _id: pgUser.id,
+              email: pgUser.email,
+              name: pgUser.fullname,
+              image: pgUser.image,
+              phoneNumber: pgUser.phonenumber,
+              Country: pgUser.country
+            };
+          }
+        } catch (neonError) {
+          console.error('Neon auth failed:', neonError);
         }
-    },
-    pages: {
-        signIn: '/auth/signin',
 
+        // // Fallback to Mongo
+        // if (!user) {
+        //   const mongoUser = await Profile.findOne({ email: credentials.email });
+        //   if (mongoUser && mongoUser.password === credentials.password) {
+        //     user = {
+        //       _id: mongoUser._id,
+        //       email: mongoUser.email,
+        //       name: mongoUser.fullName,
+        //       image: mongoUser.image,
+        //       phoneNumber: mongoUser.phoneNumber,
+        //       Country: mongoUser.Country
+        //     };
+        //   }
+        // }
+
+        return user || null;
+      }
+    })
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token._id = user._id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      session.user._id = token._id;
+      return session;
     }
-})
+  },
+  pages: {
+    signIn: '/auth/signin',
+  }
+});

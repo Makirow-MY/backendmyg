@@ -181,9 +181,10 @@ export default function Projects() {
     console.log("Deleting project with ID:", id);
     
     // Use DELETE instead of POST for semantic correctness
-     axios.get('/api/blogs?blogId=' + id).then(res => {
+     axios.delete('/api/blogs?blogId=' + id).then(res => {
                setOriginalData({ reviews: res.data.data });
-       toast.success("Blog Uploaded Successfully")
+       toast.success("Blog Deleted Successfully")
+       setDelete(false);
       const projects = res.data.data;
       projects.sort((a, b) => b.createdAt - a.createdAt);
       setAllData(projects);
@@ -192,7 +193,7 @@ export default function Projects() {
               }).catch ((error) => {
     console.error("Delete error:", error);
     setLoading(false);
-    toast.error(error.response?.data?.message || "Failed to delete project");
+   // toast.error(error.response?.data?.message || "Failed to delete project");
   })
 
 
@@ -330,7 +331,7 @@ export default function Projects() {
             <td>{item.title}</td>
             <td>
                 {
-                item.blogcategory[0]
+                item.blogcategory
                 }
                 
             </td>
@@ -369,11 +370,13 @@ export default function Projects() {
                             <div className="deletesec">
                                 <div className="pot" >
                                     <div className="deletecard">
-                                                    <p className="cookieHeading text-center">Are you sure you want to Delete this project? </p>
-                                                    <p className="cookieDescription">Project Name: <span>{productInfo?.title}</span></p>
+                                                    <p className="cookieHeading text-center">Are you sure you want to Delete this blog? </p>
+                                                    <p className="cookieDescription">blog title: <span>{productInfo?.title}</span></p>
                                                     <p className="cookieDescription">Beware, this action can not be reverse</p>
                                                     <div className="buttonContainer">
-                                                           <button className="acceptButton" onClick={() => deletBlog(productInfo._id)}>Delete</button>
+                                                           <button className="acceptButton" onClick={() => {deletBlog(productInfo._id),
+                                                            setDelete(false), router.push('/process1')
+                                                           }}>Delete</button>
                                                            <button className="declineButton" onClick={() => setDelete(false)}>Cancel</button>
                                                     </div>
                                     </div>

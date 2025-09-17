@@ -149,9 +149,9 @@ export default function Home() {
     const countLikes = () => {
       const counts = {};
       blogData.forEach(blog => {
-        blog.blogcategory.forEach(category => {
-          counts[category] = (counts[category] || 0) + 1;
-        });
+       
+          counts[blog.blogcategory] = (counts[blog.blogcategory] || 0) + 1;
+      
       });
       setLikeCounts(counts);
     };

@@ -18,6 +18,7 @@ export default function Header({ onToggleSidebar, isOpen, setSearch, search }) {
   const { data: session } = useSession();
   const router = useRouter();
   const [dark, setDark] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [active, setActive] = useState(router.pathname);
  // const { notifications, unreadCount, markAllRead, markRead } = useNotification(); // Get unread count from context
 
@@ -47,21 +48,31 @@ export default function Header({ onToggleSidebar, isOpen, setSearch, search }) {
     setDark(isDark);
   }, []);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get('/api/notification/seed');
-  //       if (response.data.message) {
-  //         toast.success(response.data.message);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching unread count:', error);
-  //     }
-  //   }
-  //  // fetchData();
-  // }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/notification?unread=true`);
+        if (response.data.success) {
+          toast.success(response.data.message);
+          setUnreadCount(response.data.data);
+        }
+    //     axios.get('/api/notification?unread=' + true).then(res => {
+    //                  console.log("id", id, "res", res);
+    // toast.success(response.data.message);
+    //                })
+    //   } catch (error) {
+    //     toast.error('Error fetching unread count:', error);
+     //}
+}
+catch (error) {
+        toast.error('Error fetching notifications');
+}
+    }
+    fetchData();
+  }, [router.pathname]);
 
   useEffect(() => {
+    toast.dismiss()
     if (dark) {
       document.body.classList.add('light');
       localStorage.setItem('darkmode', true);
@@ -123,11 +134,11 @@ export default function Header({ onToggleSidebar, isOpen, setSearch, search }) {
               {!dark && <FaSun onClick={ToggleMode} className="noti" />}
 
               <div className="notification-wrapper relative"
-              // onClick={() => router.push('/notification')}
+              onClick={() => router.push('/notification')}
                >
                 <IoNotifications className="noti" />
                 {
-                //unreadCount >= 0 && <span className="unread-badge">{unreadCount}</span>}
+                unreadCount > 0 && <span className="unread-badge">{unreadCount}</span>
               
                   }  </div>
 

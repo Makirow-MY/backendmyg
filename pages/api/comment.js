@@ -1,59 +1,144 @@
 import { mongooseConnect } from "@/lib/mongoose";
 import { Blog } from "@/models/Blog";
 import { Comment } from "@/models/Comment";
+import { neon } from '@netlify/neon';
 
 export default async function handle(req, res) {
     await mongooseConnect();
-    const {method} = req;
-    const id = req.query?.id
-    //console.log("if", id)
-    
-    if (method === 'GET') {
-          try {
+    const sql = neon(); // Use process.env.DATABASE_URL if needed
+    const { method } = req;
+    const id = req.query?.id;
 
-            if (req.query?.id) {
-                            const CommentDoc = await Comment.findById(req.query.id);
-                             if (!CommentDoc) {
-                    return res.status(404).json({ 
-                        success: false, 
-                        message: "Comment not found" 
+    if (method === 'GET') {
+        try {
+            if (id) {
+                let comment = null;
+                try {
+                    const pgComments = await sql`SELECT * FROM comments WHERE id = ${id}`;
+                    if (pgComments.length > 0) {
+                        const pgComment = pgComments[0];
+                        comment = {
+                            _id: pgComment.id,
+                            name: pgComment.name,
+                            image: pgComment.image,
+                            email: pgComment.email,
+                            title: pgComment.title,
+                            contentPera: pgComment.contentpera,
+                            mainComment: pgComment.maincomment,
+                            createdAt: pgComment.createdat,
+                            blog: pgComment.blog,
+                            blogTitle: pgComment.blogtitle,
+                            parent: pgComment.parent,
+                            children: JSON.parse(pgComment.children),
+                            parentName: pgComment.parentname,
+                            parentImage: pgComment.parentimage,
+                            updatedAt: pgComment.updatedat
+                        };
+                    }
+                } catch (neonError) {
+                    console.error('Neon GET single failed:', neonError);
+                }
+                if (!comment) {
+                    comment = await Comment.findById(id);
+                }
+                if (!comment) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "Comment not found"
                     });
                 }
-                return res.json({ 
-                    success: true, 
-                    data: CommentDoc, 
+                return res.json({
+                    success: true,
+                    data: comment,
                 });
-                
-                          }
+            } else {
+                let comments = [];
+                try {
+                    const pgComments = await sql`SELECT * FROM comments ORDER BY createdat ASC`;
+                    comments = pgComments.map(pgComment => ({
+                        _id: pgComment.id,
+                        name: pgComment.name,
+                        image: pgComment.image,
+                        email: pgComment.email,
+                        title: pgComment.title,
+                        contentPera: pgComment.contentpera,
+                        mainComment: pgComment.maincomment,
+                        createdAt: pgComment.createdat,
+                        blog: pgComment.blog,
+                        blogTitle: pgComment.blogtitle,
+                        parent: pgComment.parent,
+                        children: JSON.parse(pgComment.children),
+                        parentName: pgComment.parentname,
+                        parentImage: pgComment.parentimage,
+                        updatedAt: pgComment.updatedat
+                    }));
+                } catch (neonError) {
+                    console.error('Neon GET all failed:', neonError);
+                    comments = await Comment.find().sort({ createdAt: 1 });
+                }
 
-                          else{
-                      const comments = await Comment.find().sort({createdAt: 1});
-                        comments.forEach(async (Comment) => {
-                             const getRecent = await Blog.findById(Comment.blog)
-                             if (!getRecent) {
-                                await Comment.deleteOne({_id: Comment._id})
-                             }
-                       })
-                        const Updatedcomments = await Comment.find().sort({ createdAt: -1 });
-                   
-          // console.log("++++++++ comments ++++++++", comments);
-        return res.status(201).json(Updatedcomments);
-                          }
+                // Cleanup: Delete comments with invalid blog IDs
+                for (const comment of comments) {
+                    let blogExists = false;
+                    try {
+                        const pgBlogs = await sql`SELECT id FROM blogs WHERE id = ${comment.blog}`;
+                        if (pgBlogs.length > 0) {
+                            blogExists = true;
+                        }
+                    } catch (neonError) {
+                        console.error('Neon blog check failed:', neonError);
+                    }
+                    if (!blogExists) {
+                        const mongoBlog = await Blog.findById(comment.blog);
+                        blogExists = !!mongoBlog;
+                    }
+                    if (!blogExists) {
+                        try {
+                            await sql`DELETE FROM comments WHERE id = ${comment._id}`;
+                        } catch (neonError) {
+                            console.error('Neon delete comment failed:', neonError);
+                        }
+                        await Comment.deleteOne({ _id: comment._id });
+                    }
+                }
 
-          } catch (error) {
-               console.error("Error creating comment",error)
-                res.status(500).json({message: "Failed to create comment"});
-          }
-           
-    
-    } 
-    
-    
-       else {
-     
-        res.setHeader('Allow', ['POST']); 
+                // Fetch updated comments
+                let updatedComments = [];
+                try {
+                    const pgComments = await sql`SELECT * FROM comments ORDER BY createdat DESC`;
+                    updatedComments = pgComments.map(pgComment => ({
+                        _id: pgComment.id,
+                        name: pgComment.name,
+                        image: pgComment.image,
+                        email: pgComment.email,
+                        title: pgComment.title,
+                        contentPera: pgComment.contentpera,
+                        mainComment: pgComment.maincomment,
+                        createdAt: pgComment.createdat,
+                        blog: pgComment.blog,
+                        blogTitle: pgComment.blogtitle,
+                        parent: pgComment.parent,
+                        children: JSON.parse(pgComment.children),
+                        parentName: pgComment.parentname,
+                        parentImage: pgComment.parentimage,
+                        updatedAt: pgComment.updatedat
+                    }));
+                } catch (neonError) {
+                    console.error('Neon GET updated failed:', neonError);
+                    updatedComments = await Comment.find().sort({ createdAt: -1 });
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    data: updatedComments
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+            return res.status(500).json({ success: false, message: "Failed to fetch comments" });
+        }
+    } else {
+        res.setHeader('Allow', ['GET']); // Only GET is supported
         res.status(405).end(`Method ${method} is not allowed`);
-        
     }
-    
 }

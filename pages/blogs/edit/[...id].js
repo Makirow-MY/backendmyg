@@ -14,7 +14,7 @@ export default function EditProduct() {
     const [productInfo, setProductInfo] = useState(null);
     
     useEffect(() =>{
-      //  console.log("id re",{id})
+       console.log("id re",{id})
           if (!id) {
             return
           }

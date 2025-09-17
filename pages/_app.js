@@ -6,6 +6,7 @@ import ParentComponent from "@/components/ParentComponent";
 import "@/styles/global1.css";
 import "@/styles/globals.css";
 import "@/styles/global.css";
+import '@/styles/notifications.css';
 import { SessionProvider } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState, createContext, useContext } from "react";

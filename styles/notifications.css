@@ -1,0 +1,222 @@
+:root {
+  --bg-color: #f5f5f5;
+  --text-color: #333333;
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --card-hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --header-color: #222222;
+  --subtitle-color: #666666;
+  --button-bg: #007bff;
+  --button-text: #ffffff;
+  --button-hover-bg: #0056b3;
+  --icon-add: #28a745;
+  --icon-update: #ffc107;
+  --icon-delete: #dc3545;
+  --action-button: #007bff;
+  --action-button-hover: #0056b3;
+  --pagination-bg: #e9ecef;
+  --pagination-active-bg: #007bff;
+}
+
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --card-bg: #2c2c2c;
+  --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --card-hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  --header-color: #ffffff;
+  --subtitle-color: #aaaaaa;
+  --button-bg: #1e90ff;
+  --button-text: #ffffff;
+  --button-hover-bg: #1c86ee;
+  --icon-add: #2ecc71;
+  --icon-update: #f1c40f;
+  --icon-delete: #e74c3c;
+  --action-button: #1e90ff;
+  --action-button-hover: #1c86ee;
+  --pagination-bg: #3c3c3c;
+  --pagination-active-bg: #1e90ff;
+}
+
+.container1 {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: transparent;
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+section.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+section.header-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: red;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+section.header-icon {
+  color: var(--icon-add);
+}
+
+section.header-subtitle {
+  font-size: 1.1rem;
+  color: var(--subtitle-color);
+  margin-top: 10px;
+}
+.date-group{
+margin-bottom: 3rem;
+}
+.date-label{
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+.theme-toggle {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.theme-toggle:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.notification-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.notification-card {
+  background-color: var(--main-bgcolor);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--box-shadow);
+  transition: box-shadow 0.3s;
+}
+
+.notification-card:hover {
+  box-shadow: var(--box-shadow);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.card-icon.add {
+  color: var(--icon-add);
+  font-size: 1.5rem;
+}
+
+.card-icon.update {
+  color: var(--icon-update);
+  font-size: 1.5rem;
+}
+
+.card-icon.delete {
+  color: var(--icon-delete);
+  font-size: 1.5rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--pure-white);
+}
+
+.card-title.unread {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.card-message {
+  font-size: 1rem;
+  color: var(--week-white);
+  margin-bottom: 15px;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--subtitle-color);
+  flex-wrap: wrap;
+}
+
+.card-actions {
+  text-align: right;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  color: var(--action-button);
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+.action-button:hover {
+  color: var(--action-button-hover);
+}
+
+.empty-state {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--subtitle-color);
+  margin-top: 40px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 40px;
+}
+
+.pagination-button {
+  padding: 10px 15px;
+  background-color: var(--pagination-bg);
+  color: var(--text-color);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.pagination-button.active {
+  background-color: var(--pagination-active-bg);
+  color: var(--button-text);
+}
+
+.pagination-button:hover:not(.active) {
+  background-color: var(--button-hover-bg);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}

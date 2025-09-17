@@ -41,7 +41,7 @@ export default function SignUp() {
   const handleSubmit = async (e) =>{
   toast.loading("Processing...")
      e.preventDefault();
-
+toast.loading("Creating User...")
      setTimeout(() => {
       
       if (form.fullName === ""  || form.email === ""  || form.password === "") {

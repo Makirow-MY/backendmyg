@@ -20,6 +20,7 @@ export default function EditVisitors() {
     const [error, setError] = useState(null);
 
  useEffect(() => {
+  toast.remove()
     const fetchData = async () => {
         if (!router.isReady || !id) {
             setLoading(false);
@@ -94,10 +95,9 @@ export default function EditVisitors() {
      async function deletBlog(id) {
   try {
     console.log("Deleting project with ID:", id);
-    
     // Use DELETE instead of POST for semantic correctness
-     axios.get('/api/projects?projectId=' + id).then(res => {
-            
+     axios.delete('/api/projects?projectId=' + id).then(res => {
+            toast.success(res.data.message || "Project deleted successfully");
       goBack();
               }).catch ((error) => {
     console.error("Delete error:", error);
@@ -317,7 +317,7 @@ export default function EditVisitors() {
                                                     <p className="cookieHeading text-center">Are you sure you want to Delete this project? </p>
                                                     <p className="cookieDescription">Beware, this action can not be reverse</p>
                                                     <div className="buttonContainer">
-                                                           <button className="acceptButton" onClick={() => deletBlog(contactInfo._id)}>Delete</button>
+                                                           <button className="acceptButton" onClick={() => {deletBlog(contactInfo._id), setDelete(false), router.push('/projects/process1')}}>Delete</button>
                                                            <button className="declineButton" onClick={() => setDelete(false)}>Cancel</button>
                                                     </div>
                                     </div>

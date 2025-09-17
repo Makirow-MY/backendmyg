@@ -30,7 +30,7 @@ export default function LoginLayout({children}) {
      }
 
     if (session) {
-      console.log("Session", session)
+     // console.log("Session", session)
         window.localStorage.setItem("UserEmail", session.user.email)
         window.localStorage.setItem("UserName",  session.user.name)
         window.localStorage.setItem("UserImage", session.user.image)

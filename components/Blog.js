@@ -24,6 +24,7 @@ export default function Blog({
     status: existingStatus,
 }) {
     
+    //   console.log("existingTags", existingTags, [existingTags.map(tag => `${tag}`)])
 const [redirect, setRedirect] = useState(false);
 const router = useRouter();
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -86,17 +87,20 @@ useEffect(() => {
 }, [blogcategory]);
 async function createBlog(data) {
     data.preventDefault()
+    
     if (isUploading) {
         await Promise.all(uploadedImagesQueue)
     }
 
     const userData = {title, slug, images, description, blogcategory, tags};
     if (_id) {
+        toast.loading("Updating Blog...")
         await axios.put("/api/blogs", {...userData, _id})
         toast.success('Data updated')
        // router.push("/blogs") 
     }
     else{
+        toast.loading("Creating Blog...")
         await axios.post("/api/blogs", {...userData, _id})
         toast.success('Blog created!');
         //router.push("/blogs") 
@@ -169,6 +173,11 @@ if (redirect) {
 
     async function deleteImage(image) {
         try {
+            if (!image.url) {
+                // If image object is malformed
+                setImages(prevImages => prevImages.filter(img => img !== image));
+                return;
+            }
             if (image.type === 'uploaded') {
                 // Only call backend for uploaded images
                 await axios.delete(`/api/upload?imageUrl=${image.url}&id=${_id}`);
@@ -329,7 +338,7 @@ const handleSlugChange = (e) =>{
                                     <div key={index} className='uploadedimg'>
                                         <img 
                                             loading='lazy' 
-                                            src={image.url} 
+                                            src={image.url ? image.url : image} 
                                             alt={`Project ${index + 1}`} 
                                             className='object-cover' 
                                         />
@@ -364,7 +373,7 @@ const handleSlugChange = (e) =>{
                                 <div key={index} className='uploadedimg'>
                                     <img 
                                         loading='lazy' 
-                                        src={image.url} 
+                                       src={image.url ? image.url : image} 
                                         alt={`Project ${index + 4}`} 
                                         className='object-cover' 
                                     />
