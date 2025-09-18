@@ -39,7 +39,6 @@ export default function SignUp() {
   }
 
   const handleSubmit = async (e) =>{
-  toast.loading("Processing...")
      e.preventDefault();
 toast.loading("Creating User...")
      setTimeout(() => {
@@ -83,7 +82,7 @@ toast.loading("Creating User...")
 
      }, 5000);
     
-setTimeout(async () => {
+
   const res = await fetch(`/api/auth/signup`, {
     method: 'POST',
     headers: {'Content-type':'application/json'},
@@ -111,7 +110,7 @@ setTimeout(async () => {
      
       router.push("/auth/signin")
   }
-}, 5000);
+
 
     
 
