@@ -16,7 +16,7 @@ export default NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials, req) {
-        await mongooseConnect();
+     
         let user = null;
         
         // Try Neon first

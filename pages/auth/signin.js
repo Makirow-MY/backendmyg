@@ -84,32 +84,19 @@ setLoading(true)
         email: form.email,
         password: form.password
       })
-       const res = await fetch(`/api/auth/signin`, {
-          method: 'POST',
-          headers: {'Content-type':'application/json'},
-          body: JSON.stringify({
-            email: form.email,
-            password: form.password,
-           
-            //`https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/male/512/${Math.floor(Math.random() * 99)}.jpg`
-        })
-        })
+
+      if (!result.error) {
       
-        const data = await res.json();
-        if (data.error && !data.success) {
-         toast.dismiss()
-        toast.error("Invalid Credentials, check again")
-           return;
-        }
 
         toast.dismiss()
- window.localStorage.setItem("UserEmail", form.email);
-window.localStorage.setItem("UserName", data.data.fullname);
- window.localStorage.setItem("UserImage", data.data.image)
- window.localStorage.setItem("UserId", data.data.id)
-        toast.success(data.message)
+    console.log("Result", result)
+        toast.success(`Welcome Back ${ name || form.email}`)
          router.push("/")
-    
+      }
+      else{
+        toast.dismiss()
+        toast.error("Invalid Credentials, check again")
+      }
      } catch (error) {
        toast.dismiss()
        toast.error(error.message)
