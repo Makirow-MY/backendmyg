@@ -68,11 +68,22 @@ export default async function handler(req, res) {
     try {
       const pgUsers = await sql`SELECT * FROM profiles WHERE email = ${email}`;
       if (pgUsers.length > 0) {
+        if(pgUsers[0].password === password){
         return res.status(400).json({
+          success: true,
+          error: false,
+          message: `Welcome Back Admin ${pgUsers[0].fullname}!`,
+          data: pgUsers[0],
+        login: true
+        });
+      }
+      else{
+            return res.status(400).json({
           success: false,
           error: true,
           message: `Sorry, this email ${email} is already taken`,
         });
+      }
       }
     } catch (neonError) {
       console.error('Neon check email failed:', neonError);

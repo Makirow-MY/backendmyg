@@ -1,3 +1,147 @@
+// // pages/auth/signin.js
+// import axios from "axios";
+// import { signIn, useSession } from "next-auth/react";
+// import { useRouter } from "next/router";
+// import { useEffect, useState } from "react";
+// import toast, { ToastBar } from "react-hot-toast";
+
+
+// export default function signin() {
+  
+//    const {data: session, status} = useSession();
+//   const [form, setForm]  = useState({
+//     email: '',
+//     password:'',
+//     fullName: ""
+//   });
+//   const router = useRouter();
+
+//   const [emailErr, setEmailErr] = useState("")
+//   const [passErr, setPassErr] = useState("")
+//  const [Loading, setLoading] = useState(false)
+//  useEffect(()=>{
+//   if (status == 'authenticated') {
+//      router.push("/")
+//   }
+//    }, [status, router])
+
+//   const handleOnchange = (e) =>{
+//        setForm({
+//         ...form,
+//          [e.target.name]: e.target.value
+//        })
+//   }
+//  const  email = window.localStorage.getItem("UserEmail");
+//  const name = window.localStorage.getItem("UserName");
+//  const image = window.localStorage.getItem("UserImage")
+//   const handleSubmit = async (e) =>{
+
+//      e.preventDefault();
+//      toast.loading("Creating Project...")
+// setLoading(true)
+   
+      
+//       if ( form.email === ""  || form.password === "") {
+    
+//              if ( form.email === ""  && form.password === "") {
+//           setEmailErr("Email Adress is Missing")
+//           setPassErr("Password is Missing")
+//           setTimeout(() => {
+//             setEmailErr("")
+//             setPassErr("")
+//           }, 2000);
+//         }
+     
+//       else  if (form.email === "") {
+//         setEmailErr("Email Adress is Missing")
+//         setTimeout(() => {
+//           setEmailErr("")
+//         }, 2000);
+//     }
+  
+//     else  if (form.password === "") {
+//       setPassErr("Password is Missing")
+//       setTimeout(() => {
+//         setPassErr("")
+//       }, 2000);
+//   }
+//   toast.dismiss()
+//   toast.error("All Information Must Be Provided")
+  
+
+//   return
+//         }
+  
+
+//         toast.loading("Verifying Credentials")
+    
+ 
+//     try {
+
+
+//       const result = await signIn('credentials', {
+//         redirect: false,
+//         email: form.email,
+//         password: form.password
+//       })
+
+//       if (!result.error) {
+      
+
+//         toast.dismiss()
+//     console.log("Result", result)
+//         toast.success(`Welcome Back ${ name || form.email}`)
+//          router.push("/")
+//       }
+//       else{
+//         toast.dismiss()
+//         toast.error("Invalid Credentials, check again")
+//       }
+//      } catch (error) {
+//        toast.dismiss()
+//        toast.error(error.message)
+//      }
+
+
+
+//   }
+//   return (
+//     <>
+//     <div className="overflow-hidden ">
+//     <div className="loginform">
+//       <div className="heading">Login Admin</div>
+    
+//     <form className="form" onSubmit={handleSubmit}>
+      
+//         <input name="email" value={form.email} onChange={(e) => handleOnchange(e)} type="email" placeholder="Email Address" className={`input ${emailErr === "" ? "" : "error"}`}  />
+//         {
+//        emailErr !== "" &&  ( <p className="err">{emailErr}</p>)
+//      }
+//         <input name="password" value={form.password} onChange={(e) => handleOnchange(e)} type="password" placeholder="Password" className={`input ${passErr === "" ? "" : "error"}`}  />
+//         {
+//        passErr !== "" &&  ( <p className="err">{passErr}</p>)
+//      }
+//         <button type="submit" className="login-button">Login</button>
+//         <p  className="opti">Don't yet have an admin account? <a onClick={() =>{
+//           window.localStorage.removeItem("Randomword")
+//         }} href="/auth/signup">Sign up</a></p>
+//     </form>
+//     </div>
+//     </div>
+   
+//     </>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
 // pages/auth/signin.js
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
@@ -79,24 +223,32 @@ setLoading(true)
     try {
 
 
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: form.email,
-        password: form.password
-      })
-
-      if (!result.error) {
+       const res = await fetch(`/api/auth/signin`, {
+          method: 'POST',
+          headers: {'Content-type':'application/json'},
+          body: JSON.stringify({
+            email: form.email,
+            password: form.password,
+           
+            //`https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/male/512/${Math.floor(Math.random() * 99)}.jpg`
+        })
+        })
       
+        const data = await res.json();
+        if (data.error && !data.success) {
+         toast.dismiss()
+        toast.error("Invalid Credentials, check again")
+           return;
+        }
 
         toast.dismiss()
-    console.log("Result", result)
-        toast.success(`Welcome Back ${ name || form.email}`)
+ window.localStorage.setItem("UserEmail", form.email);
+window.localStorage.setItem("UserName", data.data.fullname);
+ window.localStorage.setItem("UserImage", data.data.image)
+ window.localStorage.setItem("UserId", data.data.id)
+        toast.success(data.message)
          router.push("/")
-      }
-      else{
-        toast.dismiss()
-        toast.error("Invalid Credentials, check again")
-      }
+    
      } catch (error) {
        toast.dismiss()
        toast.error(error.message)
@@ -132,3 +284,4 @@ setLoading(true)
     </>
   );
 }
+
