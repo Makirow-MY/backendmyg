@@ -8,8 +8,8 @@ import fs from 'fs';
 import { neon } from '@netlify/neon';
 import { v4 as uuidv4 } from 'uuid';
 
-const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use process.env.DATABASE_URL if needed
- // Use your env if needed: neon(process.env.DATABASE_URL)
+ const sql = neon(); // Use process.env.DATABASE_URL if needed
+ //  // Use your env if needed: neon(process.env.DATABASE_URL)
 export default async function handler(req, res) {
   await mongooseConnect();
   const { method } = req;
