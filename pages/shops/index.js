@@ -71,7 +71,20 @@ const [originalData, setOriginalData] = useState({
     };
 
     fetchData();
-  }, [search]);
+  }, []);
+     useEffect(() => {
+            const filterData = () => {
+       let filtered = [...allData];
+    console.log("filtered", filtered);
+    if (search.trim().toLowerCase() !== '') {
+      filtered = filtered.filter(item => 
+        item?.title.toLowerCase().includes(search.toLowerCase()) || 
+        item.client.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+        }
+        filterData();
+      },[search])
 
 
   const filterData = () => {

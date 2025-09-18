@@ -109,6 +109,10 @@ export default function Projects() {
 
         combinedData.sort((a, b) => b.createdAt - a.createdAt);
         setAllData(combinedData);
+        console.log(" commentsRes",  commentsRes,
+          "combinedData",combinedData
+          , "alldata",allData
+        )
         setLoading(false);
       
       } catch (err) {
@@ -119,7 +123,22 @@ export default function Projects() {
     };
 
     fetchData();
-  }, [search]);
+  }, []);
+
+  useEffect(() => {
+      const filterData = () => {
+    let filtered = [...allData];
+  
+    if (search.trim().toLowerCase() !== '') {
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(search.toLowerCase()) || 
+        item.email.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+  }
+  filterData();
+},[search])
+
 
   useEffect(() => {
     const baseOptions = [
@@ -510,21 +529,23 @@ export default function Projects() {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
+                {loading && currentData.length === 0
+                 ? (
                   <tr>
                     <td colSpan={mainFilter === 'all' ? 7 : 9} className="text-center" style={{padding: '5rem'}}>
                       <Dataloading />
                     </td>
                   </tr>
                 ) : (
-                  currentData.length === 0 ? (
+  !loading &&   currentData.length === 0 ? (
                     <tr>
                       <td colSpan={mainFilter === 'all' ? 7 : 9} className="text-center" style={{padding: '5rem'}}>
                         No Data Found
                       </td>
                     </tr>
                   ) : (
-                    currentData.map((item, index) => renderTableRow(item, index))
+    !loading &&  currentData.length > 0 &&
+     currentData.map((item, index) => renderTableRow(item, index))
                 )
             )}
               </tbody>

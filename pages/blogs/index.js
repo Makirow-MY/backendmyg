@@ -56,7 +56,7 @@ export default function Projects() {
 
         const projects = projectsRes.data.data;
         
-       
+       console.log("projects", projects)
 
         projects.sort((a, b) => b.createdAt - a.createdAt);
         setAllData(projects);
@@ -70,9 +70,20 @@ export default function Projects() {
     };
 
     fetchData();
-  }, [search]);
+  }, []);
 
-
+ useEffect(() => {
+            const filterData = () => {
+       let filtered = [...allData];
+    console.log("filtered", filtered);
+    if (search.trim().toLowerCase() !== '') {
+      filtered = filtered.filter(item => 
+        item?.title.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+        }
+        filterData();
+      },[search])
 
   const filterData = () => {
     let filtered = [...allData];

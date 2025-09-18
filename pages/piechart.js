@@ -177,7 +177,7 @@ const ProjectCategoryPieChart = () => {
       setRotationAngle(prev => (prev + 0.5) % 360);
     }, 50);
 
-    const refreshInterval = setInterval(fetchData, 2 * 60 * 1000);
+    const refreshInterval = setInterval(fetchData, 30 * 60 * 1000);
     
     return () => {
       clearInterval(rotationInterval);

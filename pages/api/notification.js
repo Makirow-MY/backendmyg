@@ -15,6 +15,7 @@ export default async function handler(req, res) {
   const { method } = req;
 
   if (method === "GET") {
+//await sql`DELETE FROM notifications WHERE read = false`;
     let notifications = [];
   
     if(req.query.unread == 'true'){
@@ -40,7 +41,6 @@ export default async function handler(req, res) {
     
     }
    
-   console.log("req.query.read", req.query, notifications.length);
     return res.json({
       success: true,
       data: notifications.length,

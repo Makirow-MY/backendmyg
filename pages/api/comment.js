@@ -5,10 +5,11 @@ import { neon } from '@netlify/neon';
 
 export default async function handle(req, res) {
     await mongooseConnect();
-    const sql = neon(); // Use process.env.DATABASE_URL if needed
+     const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use process.env.DATABASE_URL if needed
+ 
     const { method } = req;
     const id = req.query?.id;
-
+     console.log("Query ID:", req.query);
     if (method === 'GET') {
         try {
             if (id) {
@@ -29,7 +30,7 @@ export default async function handle(req, res) {
                             blog: pgComment.blog,
                             blogTitle: pgComment.blogtitle,
                             parent: pgComment.parent,
-                            children: JSON.parse(pgComment.children),
+                            children: pgComment.children,
                             parentName: pgComment.parentname,
                             parentImage: pgComment.parentimage,
                             updatedAt: pgComment.updatedat
@@ -38,9 +39,7 @@ export default async function handle(req, res) {
                 } catch (neonError) {
                     console.error('Neon GET single failed:', neonError);
                 }
-                if (!comment) {
-                    comment = await Comment.findById(id);
-                }
+             
                 if (!comment) {
                     return res.status(404).json({
                         success: false,
@@ -52,6 +51,7 @@ export default async function handle(req, res) {
                     data: comment,
                 });
             } else {
+//await sql`DELETE FROM comments WHERE maincomment = false  OR maincomment= true`;
                 let comments = [];
                 try {
                     const pgComments = await sql`SELECT * FROM comments ORDER BY createdat ASC`;
@@ -67,14 +67,14 @@ export default async function handle(req, res) {
                         blog: pgComment.blog,
                         blogTitle: pgComment.blogtitle,
                         parent: pgComment.parent,
-                        children: JSON.parse(pgComment.children),
+                        children: pgComment.children,
                         parentName: pgComment.parentname,
                         parentImage: pgComment.parentimage,
                         updatedAt: pgComment.updatedat
                     }));
                 } catch (neonError) {
-                    console.error('Neon GET all failed:', neonError);
-                    comments = await Comment.find().sort({ createdAt: 1 });
+                    console.log('Neon GET all commmments failed:', neonError);
+                   //omments = await Comment.find().sort({ createdAt: 1 });
                 }
 
                 // Cleanup: Delete comments with invalid blog IDs
@@ -88,17 +88,14 @@ export default async function handle(req, res) {
                     } catch (neonError) {
                         console.error('Neon blog check failed:', neonError);
                     }
-                    if (!blogExists) {
-                        const mongoBlog = await Blog.findById(comment.blog);
-                        blogExists = !!mongoBlog;
-                    }
+                    
                     if (!blogExists) {
                         try {
                             await sql`DELETE FROM comments WHERE id = ${comment._id}`;
                         } catch (neonError) {
                             console.error('Neon delete comment failed:', neonError);
                         }
-                        await Comment.deleteOne({ _id: comment._id });
+                       //wait Comment.deleteOne({ _id: comment._id });
                     }
                 }
 
@@ -118,20 +115,19 @@ export default async function handle(req, res) {
                         blog: pgComment.blog,
                         blogTitle: pgComment.blogtitle,
                         parent: pgComment.parent,
-                        children: JSON.parse(pgComment.children),
+                        children: pgComment.children,
                         parentName: pgComment.parentname,
                         parentImage: pgComment.parentimage,
                         updatedAt: pgComment.updatedat
                     }));
+                  
                 } catch (neonError) {
-                    console.error('Neon GET updated failed:', neonError);
-                    updatedComments = await Comment.find().sort({ createdAt: -1 });
+                    console.log('Neon GET updated failed:', neonError);
+                    //datedComments = await Comment.find().sort({ createdAt: -1 });
                 }
-
-                return res.status(200).json({
-                    success: true,
-                    data: updatedComments
-                });
+                console.log("updatedComments", updatedComments);
+                return res.status(200).json( updatedComments
+                );
             }
         } catch (error) {
             console.error("Error fetching comments:", error);

@@ -504,7 +504,7 @@ const AnalyticsChart = () => {
     fetchData();
 
     // Set up polling for real-time updates (every 5 minutes)
-    const intervalId = setInterval(fetchData, 5 * 60 * 1000);
+    const intervalId = setInterval(fetchData, 30 * 60 * 1000);
     
     return () => clearInterval(intervalId);
   }, []);

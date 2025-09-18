@@ -52,8 +52,7 @@ export default function Header({ onToggleSidebar, isOpen, setSearch, search }) {
     const fetchData = async () => {
       try {
         const response = await axios.get(`/api/notification?unread=true`);
-        if (response.data.success) {
-          toast.success(response.data.message);
+        if (response.data.success && response.data.data > 0) {
           setUnreadCount(response.data.data);
         }
     //     axios.get('/api/notification?unread=' + true).then(res => {
@@ -65,7 +64,7 @@ export default function Header({ onToggleSidebar, isOpen, setSearch, search }) {
      //}
 }
 catch (error) {
-        toast.error('Error fetching notifications');
+    //  toast.error('Error fetching notifications');
 }
     }
     fetchData();
@@ -113,7 +112,7 @@ catch (error) {
             <form className="form2" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search here"
                 className="search-input"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -133,12 +132,16 @@ catch (error) {
               {dark && <FaMoon onClick={ToggleMode} className="noti" />}
               {!dark && <FaSun onClick={ToggleMode} className="noti" />}
 
-              <div className="notification-wrapper relative"
+              <div className="notification-wrapper relative cursor"
               onClick={() => router.push('/notification')}
                >
                 <IoNotifications className="noti" />
                 {
-                unreadCount > 0 && <span className="unread-badge">{unreadCount}</span>
+                unreadCount > 0 && <span className="unread-badge">{unreadCount > 999 ?
+                  Math.floor
+                  (unreadCount / 1000)
+                   + 'K' : unreadCount
+                }</span>
               
                   }  </div>
 

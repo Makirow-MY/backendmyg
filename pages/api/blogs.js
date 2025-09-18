@@ -135,7 +135,7 @@ export default async function handle(req, res) {
                             type, model, dataid, title, message, createddate
                         ) VALUES (
                             'add', 'Blog', ${id}, 'Blog Post Creation Documented',
-                            ${` Admin published blog post "${title}" (category: ${blogcategory}, status: ${status}) on ${formatDate(new Date())}. Included elements: tags ${JSON.stringify(tags)}, images ${JSON.stringify(images)}, content overview ${description.slice(0, 150)}.... Evaluate for alignment with content strategy and prepare for distribution.`},
+                            ${` Admin published blog post "${title}" (category: ${blogcategory}, status: ${status}) on ${formatDate(new Date())}. Included elements: tags ${JSON.stringify(tags)}, content overview ${description.slice(0, 150)}.... Evaluate for alignment with content strategy and prepare for distribution.`},
                             CURRENT_TIMESTAMP
                         )`;
                 } catch (neonNotifError) {
@@ -177,7 +177,10 @@ export default async function handle(req, res) {
             // }
         });
     } else if (method === "GET") {
-        if (req.query?.id || req.query?.blogId) {
+const queryId = "publish";
+//await sql`DELETE FROM blogs WHERE status   = ${queryId}`;
+
+   if (req.query?.id || req.query?.blogId) {
             const queryId = req.query.id || req.query.blogId;
             console.log("Query ID:", req.query);
             let blog = null;
@@ -217,6 +220,182 @@ export default async function handle(req, res) {
                 });
             }
         } else {
+
+//                                              try {
+//   let createdCount = 0;
+//   for (const blog of defaultBlogs) {
+//     // Check if blog exists by slug and title
+
+//     const existingBlog = await sql`
+//       SELECT slug id FROM blogs WHERE id = ${blog.id}
+//     `;
+//     if (existingBlog.length > 0) {
+//      console.log('already exist')
+//          // Skip to next blog if it already exists
+//     }
+// else{
+//     // Insert new blog
+//     const [createdBlog] = await sql`
+//       INSERT INTO blogs (id,
+//       title, slug, images, description, blogcategory, tags, status, comments, createdat)
+//       VALUES (
+//       ${blog.id},
+//         ${blog.title},
+//         ${blog.slug},
+//         ${JSON.stringify(blog.images)},
+//         ${blog.description},
+//         ${blog.blogcategory},
+//         ${JSON.stringify(blog.tags)},
+//         ${blog.status},
+//         ${JSON.stringify([])},
+//         CURRENT_TIMESTAMP
+//       )
+//       RETURNING id
+//     `;
+//     const blogId = createdBlog.id;
+
+//     // Insert blog creation notification (admin action)
+//     try {
+//       await sql`
+//         INSERT INTO notifications (type, model, dataid, title, message, createddate)
+//         VALUES (
+//           'add',
+//           'Blog',
+//           ${blogId},
+//           'Blog Post Creation Documented',
+//           ${`Admin published blog post "${blog.title}" (ID: ${blogId}, slug: ${blog.slug}, category: ${blog.blogcategory}, status: ${blog.status}) on ${formatDate(new Date())}. Included elements: tags ${JSON.stringify(blog.tags)}, content overview ${blog.description.slice(0, 150)}.... Evaluate for alignment with content strategy and prepare for distribution.`},
+//           CURRENT_TIMESTAMP
+//         )
+//       `;
+//     } catch (neonNotifError) {
+       
+//       console.error('Neon blog notification insert failed:', neonNotifError);
+//    //eturn
+//     }
+
+//     // Generate and insert comments
+//     const commentGroups = generateRandomComments(blog, blogId);
+//     const commentIds = [];
+//     for (const group of commentGroups) {
+//       try {
+//         // Insert main comment
+//         const [mainComment] = await sql`
+//           INSERT INTO comments (
+//             name, image, email, title, contentpera, maincomment, createdat,
+//             blog, blogtitle, parent, children, parentname, parentimage
+//           )
+//           VALUES (
+//             ${group.mainComment.name},
+//             ${group.mainComment.image},
+//             ${group.mainComment.email},
+//             ${group.mainComment.title},
+//             ${group.mainComment.contentPera},
+//             ${group.mainComment.mainComment},
+//             CURRENT_TIMESTAMP,
+//             ${blogId},
+//             ${blog.title},
+//             NULL,
+//             ${JSON.stringify([])},
+//             ${group.mainComment.parentName || ''},
+//             ${group.mainComment.parentImage || ''}
+//           )
+//           RETURNING id
+//         `;
+//         const mainCommentId = mainComment.id;
+//         commentIds.push(mainCommentId);
+
+//         // Insert main comment notification (user action)
+//     try{
+//             await sql`
+//           INSERT INTO notifications (type, model, dataid, title, message, createddate)
+//           VALUES (
+//             'add',
+//             'Comment',
+//             ${mainCommentId},
+//             'Comment Submission Noted',
+//             ${`User ${group.mainComment.name} ( email: ${group.mainComment.email}) submitted a comment on blog "${blog.title}" through the website on ${formatDate(new Date())}. Details: title "${group.mainComment.title}", content "${group.mainComment.contentPera}", parent reference ${group.mainComment.parentName || 'none'}. Perform moderation to uphold content standards and facilitate engagement.`},
+//             CURRENT_TIMESTAMP
+//           )
+//         `;
+//     }
+//     catch(error){
+
+//     }
+
+//         // Prepare and insert reply comments
+//         const replyCommentIds = [];
+//         for (const reply of group.replyComments) {
+//           const [createdReply] = await sql`
+//            INSERT INTO comments (
+//             name, image, email, title, contentpera, maincomment, createdat,
+//             blog, blogtitle, parent, children, parentname, parentimage
+//           )
+//             VALUES (
+//               ${reply.name},
+//               ${reply.image},
+//               ${reply.email},
+//               ${reply.title},
+//               ${reply.contentPera},
+//               ${reply.mainComment},
+//               CURRENT_TIMESTAMP,
+//               ${blogId},
+//               ${blog.title},
+//               ${mainCommentId},
+//               ${JSON.stringify([])},
+//               ${reply.parentName || group.mainComment.name},
+//               ${reply.parentImage || group.mainComment.image}
+//             )
+//             RETURNING id
+//           `;
+//           const replyId = createdReply.id;
+//           replyCommentIds.push(replyId);
+//           commentIds.push(replyId);
+
+//           // Insert reply comment notification (user action)
+//         try{
+//               await sql`
+//             INSERT INTO notifications (type, model, dataid, title, message, createddate)
+//             VALUES (
+//               'add',
+//               'Comment',
+//               ${replyId},
+//               'Comment Submission Noted',
+//               ${`User ${reply.name} (ID: ${reply.email}, email: ${reply.email}) submitted a comment on blog "${blog.title}"throught the website on ${formatDate(new Date())}. Details: title "${reply.title}", content "${reply.contentPera}", parent reference ${reply.parentName || 'none'}. Perform moderation to uphold content standards and facilitate engagement.`},
+//               CURRENT_TIMESTAMP
+//             )
+//           `;
+//         }
+//         catch(error){
+           
+//         }
+
+//         }
+
+//         // Update main comment with children IDs
+//         await sql`
+//           UPDATE comments
+//           SET children = ${JSON.stringify(replyCommentIds)}
+//           WHERE id = ${mainCommentId}
+//         `;
+//       } catch (commentError) {
+//      // console.error(`Error processing comments for blog "${blog.title}":`, commentError);
+//         // Continue to next group without stopping
+//       }
+//     }
+
+//     // Update blog with all comment IDs
+//     await sql`
+//       UPDATE blogs
+//       SET comments = ${JSON.stringify(commentIds)}
+//       WHERE id = ${blogId}
+//     `;
+//     createdCount++;
+//    } }
+// } catch (error) {
+//   //nsole.error('Error populating default blogs, comments, or notifications:', error);
+// //return res.status(500).json({ success: false, message: `Error: ${error.message}` });
+// }
+
             let blogs = [];
             try {
                 const pgBlogs = await sql`SELECT * FROM blogs ORDER BY createdat DESC`;
@@ -237,12 +416,48 @@ export default async function handle(req, res) {
                 console.error('Neon GET all failed:', neonError);
                 blogs = await Blog.find().sort({ createdAt: -1 });
             }
-            return res.json({
-                success: true,
-                data: blogs,
-                message: ""
-            });
+
+         let cleanedReferenceCount = 0;
+
+    // For each blog, validate and clean the comments array
+    for (const blog of blogs) {
+
+      try {
+        // Get current comment IDs from the blog
+        const currentCommentIds = blog.comments || [];
+
+        if (currentCommentIds.length > 0) {
+       
+        // Fetch all existing comment IDs
+        const existingComments = await sql`
+          SELECT id FROM comments WHERE id = ANY(${currentCommentIds})
+        `;
+
+        const validCommentIds = existingComments.map(c => c.id);
+
+        // If there are invalid references, update the blog
+        if (validCommentIds.length !== currentCommentIds.length) {
+          await sql`
+            UPDATE blogs
+            SET comments = ${JSON.stringify(validCommentIds)}
+            WHERE id = ${blog._id}
+          `;
+          cleanedReferenceCount += (currentCommentIds.length - validCommentIds.length);
+          blog.comments = validCommentIds; // Update in-memory for response
         }
+    }
+      } catch (neonError) {
+        // Silently continue to next blog
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: blogs,
+      message: `Fetched ${blogs.length} blogs. Cleaned ${cleanedReferenceCount} invalid comment references.`
+    });
+        }
+     
     } else if (method === "PUT") {
         const { _id, title, slug, images, description, blogcategory, tags,} = req.body;
         console.log("PUT body", req.body)

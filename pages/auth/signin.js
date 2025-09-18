@@ -37,7 +37,7 @@ export default function signin() {
   const handleSubmit = async (e) =>{
 
      e.preventDefault();
-    
+     toast.loading("Creating Project...")
 setLoading(true)
    
       
@@ -75,8 +75,6 @@ setLoading(true)
 
         toast.loading("Verifying Credentials")
     
-setTimeout(async () => {
- 
  
     try {
 
@@ -104,7 +102,7 @@ setTimeout(async () => {
        toast.error(error.message)
      }
 
-}, 2000);
+
 
   }
   return (

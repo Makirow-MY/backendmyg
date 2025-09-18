@@ -4,18 +4,19 @@ import useFetchData from '@/hooks/useFetchData';
 import { Link } from 'lucide-react';
 import { FaRegEye } from 'react-icons/fa';
 import axios from 'axios';
+import Spinner from '@/components/Spinner';
 
 function UserTable({search}) {
   const [allData, setAllData] = useState([]);
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [currP, setCurrP] = useState(1);
   const [pagePage, setPagePage] = useState(7);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-      //  setLoading(true);
+       setLoading(true);
         setError(null);
         
         // Fetch all data in parallel
@@ -73,17 +74,17 @@ function UserTable({search}) {
         combinedData.sort((a, b) => b.createdAt - a.createdAt);
 
         setAllData(combinedData);
-       // setLoading(false);
+        setLoading(false);
      
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
-        //setLoading(false);
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [search]);
+  }, []);
 
   const filterData = search.trim().toLowerCase() === '' 
     ? allData 
@@ -91,6 +92,20 @@ function UserTable({search}) {
         item.name.toLowerCase().includes(search.toLowerCase()) || 
         item.email.toLowerCase().includes(search.toLowerCase())
       );
+
+        useEffect(() => {
+            const filterData = () => {
+          let filtered = [...allData];
+        
+          if (search.trim().toLowerCase() !== '') {
+            filtered = filtered.filter(item => 
+              item.name.toLowerCase().includes(search.toLowerCase()) || 
+              item.email.toLowerCase().includes(search.toLowerCase())
+            );
+          }
+        }
+        filterData();
+      },[search])
 
   const indexfirstString = (currP - 1) * pagePage;
   const indexlastString = currP * pagePage;
@@ -151,21 +166,23 @@ else{
           </tr>
         </thead>
         <tbody>
-          {loading ? (
+          {loading && currentData.length === 0 && (
             <tr>
-              <td colSpan={7} className="text-center" style={{padding: '5rem'}}>
-                <Dataloading />
+              <td colSpan={7} className="text-center wh_50" style={{padding: '5rem', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                <Spinner />
               </td>
             </tr>
-          ) : (
-            currentData.length === 0 ? (
+          ) 
+        }
+         {    !loading &&  currentData.length === 0 &&(
               <tr>
                 <td colSpan={7} className="text-center" style={{padding: '5rem'}}>
                   No Data Found
                 </td>
               </tr>
-            ) : (
-              currentData.map((item, index) => (
+         )
+} {
+ !loading &&  currentData.length > 0 &&   currentData.map((item, index) => (
                 <tr key={item.id}>
                   <td style={{width: '30px'}}>
                     {(indexfirstString + index + 1) > 9 ? 
@@ -200,8 +217,8 @@ else{
                   </td>
                 </tr>
               ))
-            )
-          )}
+            
+          }
         </tbody>
       </table>
     </div>

@@ -3,6 +3,8 @@ import axios from 'axios';
 import { FaBell, FaCheck, FaCheckCircle, FaCheckDouble, FaExclamationTriangle, FaTimesCircle } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import Spinner from '@/components/Spinner';
+import LoginLayout from '@/components/LoginLayout';
+import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
 
 
@@ -13,7 +15,8 @@ export default function NotificationsPage() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [selectedModel, setSelectedModel] = useState('All');
   const [groupPages, setGroupPages] = useState({}); // { dateLabel: currentPage }
-  const itemsPerPage = 8;
+  const itemsPerPage = 20;
+  const [currP, setCurrP] = useState(1)
   const router = useRouter();
   const notificationRefs = useRef({});
 
@@ -135,6 +138,13 @@ export default function NotificationsPage() {
 
   const handlePageChange = (label, page) => {
     setGroupPages(prev => ({ ...prev, [label]: page }));
+        setCurrP(page);
+  };
+
+    const paginate = (label, pageNum) => {
+    setCurrP(pageNum);
+     setGroupPages(prev => ({ ...prev, [label]: pageNum }));
+
   };
 
   if (loading) {
@@ -143,7 +153,9 @@ export default function NotificationsPage() {
 
   return (
     <>
-    <div className="page">
+    <LoginLayout>
+
+        <div className="page">
         <div className="dashboard-header">
           <div>
             <h2><span>Notifications</span></h2>
@@ -185,53 +197,62 @@ export default function NotificationsPage() {
             </div>
           </div>
         </div>
-        </div>
-    <div className="container1">
-      <section className="header">
-        <h1 className="header-title">
-          <FaBell className="header-icon" /> Notifications Dashboard
-        </h1>
-        <p className="header-subtitle">{notifications.length} total notifications</p>
-        <button className="theme-toggle" onClick={toggleTheme}>
-          Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode
-        </button>
-        <div className="filter-container">
-          <label htmlFor="model-filter">Filter by Model:</label>
-          <select
-            id="model-filter"
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            className="model-select"
-          >
-            <option value="All">All</option>
-            <option value="Profile">Profile</option>
-            <option value="Blog">Blog</option>
-            <option value="Comment">Comment</option>
-            <option value="Project">Project</option>
-            <option value="Contact">Contact</option>
-            <option value="Review">Review</option>
-            <option value="Transaction">Transaction</option>
-          </select>
-        </div>
-      </section>
 
-      <div className="notification-timeline">
-        {sortedGroups.map((label) => {
-          const groupNotifs = groupedNotifications[label];
-          const currentGroupPage = groupPages[label] || 1;
-          const indexOfLastItem = currentGroupPage * itemsPerPage;
-          const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-          const currentGroupNotifs = groupNotifs.slice(indexOfFirstItem, indexOfLastItem);
-          const groupTotalPages = Math.ceil(groupNotifs.length / itemsPerPage);
+        
 
-          return (
-            <div key={label} className="date-group">
+        <div className="container1">
+  
+<div classname="notification-timeline">
+    {sortedGroups.map((label) => {
+  const groupNotifs = groupedNotifications[label];
+  const currentGroupPage = groupPages[label] || 1;
+  const indexOfFirstItem = (currentGroupPage - 1) * itemsPerPage;
+  const indexOfLastItem = currentGroupPage * itemsPerPage;
+  const currentGroupNotifs = groupNotifs.slice(indexOfFirstItem, indexOfLastItem);
+  const groupTotalPages = Math.ceil(groupNotifs.length / itemsPerPage);
+  const pageNumbers = Array.from({ length: groupTotalPages }, (_, index) => index + 1);
+
+  return (
+    <div key={label} className="date-group">
              <div className='flex gap-1 flex-center'>
                <div className="date-label">{label}</div>
              </div>
-              <div className="notification-grid">
-                {currentGroupNotifs.map((notif) => (
-                  <div
+
+ {groupNotifs.length > 0 && (
+        <div className="flex flex-center mb-2 mt-2">
+          <div className="blogpagination">
+            <button
+              onClick={() => paginate(label, currentGroupPage - 1)}
+              disabled={currentGroupPage === 1}
+            >
+              <IoChevronBack style={{ fontSize: '20' }} />
+            </button>
+            {pageNumbers
+              .slice(
+                Math.max(currentGroupPage - 3, 0),
+                Math.min(currentGroupPage + 2, pageNumbers.length)
+              )
+              .map((num) => (
+                <button
+                  key={num}
+                  onClick={() => paginate(label, num)}
+                  className={currentGroupPage === num ? 'active' : ''}
+                >
+                  {num}
+                </button>
+              ))}
+            <button
+              onClick={() => paginate(label, currentGroupPage + 1)}
+              disabled={currentGroupPage === groupTotalPages}
+            >
+              <IoChevronForward style={{ fontSize: '20' }} />
+            </button>
+          </div>
+        </div>
+      )}
+ <div className="notification-grid">
+      {currentGroupNotifs.map((notif) => (
+         <div
                     key={notif._id}
                     className="notification-card"
                     ref={(el) => (notificationRefs.current[notif._id] = el)}
@@ -257,30 +278,24 @@ export default function NotificationsPage() {
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
-              {groupTotalPages > 1 && (
-                <div className="pagination">
-                  {Array.from({ length: groupTotalPages }, (_, index) => (
-                    <button
-                      key={index + 1}
-                      onClick={() => handlePageChange(label, index + 1)}
-                      className={`pagination-button ${currentGroupPage === index + 1 ? 'active' : ''}`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      ))}
+     </div>
+    </div>
+  );
+})}
+</div>
+
+
 
       {filteredNotifications.length === 0 && (
         <p className="empty-state">No notifications available.</p>
       )}
     </div>
+        </div>
+
+    </LoginLayout>
+  
+    
     </>
   );
 }
