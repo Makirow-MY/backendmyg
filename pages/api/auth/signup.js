@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
 
  const sql = neon(); // Use process.env.DATABASE_URL if needed
- 
+
 const formatDate = (date) => {
   if (!date || isNaN(date)) {
     return '';
@@ -21,7 +21,7 @@ const formatDate = (date) => {
 };
 
 export default async function handler(req, res) {
-  await mongooseConnect();
+
   const { method } = req;
 
   if (method === "POST") {

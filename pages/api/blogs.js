@@ -100,7 +100,7 @@ async function deleteImages(images) {
 }
 
 export default async function handle(req, res) {
-    await mongooseConnect();
+ 
  const sql = neon(); // Use process.env.DATABASE_URL if needed
   // Use process.env.DATABASE_URL if needed
     const { method } = req;

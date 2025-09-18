@@ -58,7 +58,7 @@ async function deleteImage(imageUrl) {
   }
 }
 export default async function handleproj(req, res) {
-  await mongooseConnect();
+ 
   const { method } = req;
   if (method === "POST") {
     upload(req, res, async (err) => {
