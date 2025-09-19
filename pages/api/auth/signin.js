@@ -5,8 +5,6 @@ import { neon } from '@netlify/neon';
 import { faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
 
- const sql = neon(); // Use process.env.DATABASE_URL if needed
-
 const formatDate = (date) => {
   if (!date || isNaN(date)) {
     return '';
@@ -19,6 +17,7 @@ const formatDate = (date) => {
   };
   return new Intl.DateTimeFormat('en-US', options).format(date);
 };
+const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use process.env.DATABASE_URL if needed
 
 export default async function handler(req, res) {
 
@@ -31,11 +30,20 @@ export default async function handler(req, res) {
     try {
       const pgUsers = await sql`SELECT * FROM profiles WHERE email = ${email} AND password = ${password}`;  
       if (pgUsers.length > 0) {
-        return res.status(400).json({
+        return res.status(200).json({
           success: true,
           error:false,
           message: `Welcome Back Admin ${pgUsers[0].fullname}!`,
           data: pgUsers[0],
+          
+        });
+      }
+      else{
+return res.status(200).json({
+          success: false,
+          error: true,
+          message: `Invalid Credentials, please check email or password`,
+    
           
         });
       }
@@ -44,65 +52,11 @@ export default async function handler(req, res) {
        return res.status(400).json({
           success: false,
           error: true,
-          message: `Sorry, this email ${email} is already taken`,
+          message: `Sorry, You can't be sign in, error occurred ${neonError.message }`,
         });
-      // // Fallback to Mongo
-      // const existingUser = await Profile.findOne({ email });
-      // if (existingUser) {
-      //   return res.status(400).json({
-      //     success: false,
-      //     error: true,
-      //     message: `Sorry, this email ${email} is already taken`,
-      //   });
-      // }
-    }
-
-    const randomNum = Math.floor(Math.random() * 100) + 1;
-    const gender = randomNum % 2 === 0 ? 'female' : 'male';
-    const imageNumber = Math.floor(Math.random() * 100);
-    const id = uuidv4();
-    const token = faker.string.uuid();
-    const finalImage = image || `https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/${gender}/512/${imageNumber}.jpg`;
-
-    // Write to Neon
-    try {
-      await sql`
-        INSERT INTO profiles (
-          id, fullname, password, phonenumber, country, email, image, token
-        ) VALUES (
-          ${id}, ${fullName}, ${password}, ${phoneNumber}, ${Country}, ${email}, ${finalImage}, ${token}
-        )`;
-
-        try {
-  await sql`
-    INSERT INTO notifications (
-      type, model, dataid, title, message, createddate
-    ) VALUES (
-      'add', 'Profile', ${id}, 'User Account Creation Recorded',
-      ${`On ${formatDate(new Date())}, an admin account was for a new user account with full name ${fullName} (email: ${email}). Associated details: phone ${phoneNumber}. Recommend immediate verification to confirm identity and integrate into system workflows.`},
-      CURRENT_TIMESTAMP
-    )`;
- return res.status(200).json({
-        success: true,
-        error: false,
-        message: "Account Created Successfully!",
-        data: newUser,
-      });
-
-} catch (neonError) {
-  // Handle error, perhaps rollback Profile if critical
-}
-
              
 
-    } catch (neonError) {
-      return res.status(500).json({
-        success: false,
-        error: true,
-        message: `Neon insert failed: ${neonError.message}`,
-      });
-    }
-
+      }
     // // Write to Mongo
     // try {
     //   const newUser = await Profile.create({

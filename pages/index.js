@@ -15,6 +15,7 @@ import Link from "next/link";
 import Head from "next/head";
 import LoginLayout from "@/components/LoginLayout";
 import { useSearch } from "../components/search";
+import Spinner from "@/components/Spinner";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -47,7 +48,7 @@ export default function Home() {
       try {
         const response = await axios.get('/api/reviews');
         const responseProj = await axios.get('/api/blogs');
-        
+        setLoading(false)
         setBlogData(responseProj.data.data);
         setReviewData(response.data);
       } catch (error) {
@@ -213,7 +214,24 @@ export default function Home() {
                       <tr><th>Category</th><th>Total</th></tr>
                     </thead>
                     <tbody>
-                      {Object.entries(likeCounts).map(([category, count]) => (
+                      {
+                            loading &&  <tr>
+                          <td colSpan="2" height={50} className="mt-15 flex flex-center  text-center ">  
+                            <Spinner/>
+                          </td>
+                          </tr>
+                      }
+                       {!loading && blogData.length === 0 && Object.keys(likeCounts).length === 0 && (
+                        <tr>
+                          <td colSpan="2" height={50} className="mt-15 flex flex-center  text-center ">  
+                            No blog to categories
+                          </td>
+                        </tr>
+                      )
+
+                       
+                       }
+                      {!loading && blogData.length > 0 && Object.entries(likeCounts).map(([category, count]) => (
                         <tr key={category}>
                           <td>{category}</td>
                           <td>{count > 9 ? count : '0'+count}</td>

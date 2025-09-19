@@ -6,7 +6,8 @@ import { neon } from '@netlify/neon';
 export default async function handle(req, res) {
     
    //const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use process.env.DATABASE_URL if needed
-  const sql = neon(); // Use process.env.DATABASE_URL if needed
+ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use process.env.DATABASE_URL if needed
+
     const { method } = req;
     const id = req.query?.id;
      console.log("Query ID:", req.query);
@@ -126,8 +127,7 @@ export default async function handle(req, res) {
                     //datedComments = await Comment.find().sort({ createdAt: -1 });
                 }
                 console.log("updatedComments", updatedComments);
-                return res.status(200).json( updatedComments
-                );
+                return res.status(200).json( updatedComments);
             }
         } catch (error) {
             console.error("Error fetching comments:", error);

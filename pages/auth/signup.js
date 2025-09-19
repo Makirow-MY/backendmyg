@@ -103,21 +103,15 @@ toast.loading("Creating User...")
     toast.dismiss()
      toast.error(data.message)
   }
-else if(!data.success&& !data.error && data.login){
-    toast.dismiss()
-   toast.success(data.message)
-     window.localStorage.setItem("UserEmail", form.email);
-window.localStorage.setItem("UserName", data.data.fullname);
- window.localStorage.setItem("UserImage", data.data.image)
- window.localStorage.setItem("UserId", data.data.id)
-        toast.success(data.message)
-         router.push("/")
-    
-  }
+
   else{
     toast.dismiss()
     toast.success(data.message)
       window.localStorage.setItem("UserId", data.data.id)
+        window.localStorage.setItem("UserEmail", data.data.email);
+window.localStorage.setItem("UserName", data.data.fullname);
+ window.localStorage.setItem("UserImage", data.data.image)
+//  window.localStorage.setItem("UserId", data.data.id)
      
       router.push("/auth/signin")
   }

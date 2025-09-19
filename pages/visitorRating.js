@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { IoStar, IoStarOutline } from 'react-icons/io5';
+import Spinner from '@/components/Spinner';
 
 const StarRating = ({ rating }) => {
   const stars = [];
@@ -43,8 +44,6 @@ const ProjectCategoryStats = () => {
     fetchData();
   }, []);
 
-  if (loading) return <div className="text-center py-4">Loading...</div>;
-  if (error) return <div className="text-center py-4 text-red-500">Error: {error}</div>;
 
   // Process data to get category statistics
   const getCategoryStats = () => {
@@ -113,7 +112,18 @@ const ProjectCategoryStats = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {categoryStats.map((stat, index) => (
+            { loading &&
+              <div className="text-center py-4"><Spinner/></div>
+            }
+            {
+              !loading && categoryStats.length === 0 && (
+                <tr>
+                  <td colSpan="3" className="p-2 whitespace-nowrap text-sm text-center text-gray-500">
+                      No categories with reviews found.
+                      </td>
+                      </tr>)
+            }
+            { !loading &&  categoryStats.length > 0 && categoryStats.map((stat, index) => (
               <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {stat.category}

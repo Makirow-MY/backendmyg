@@ -29,7 +29,7 @@ export default function LoginLayout({children}) {
          return null;
      }
 
-    if (session&&( userID && userRand)){
+    if (session || (userID && userRand)) {
      // console.log("Session", session)
         window.localStorage.setItem("UserEmail", session.user.email)
         window.localStorage.setItem("UserName",  session.user.name)
