@@ -312,7 +312,7 @@ const queryId = "publish";
 //             'Comment',
 //             ${mainCommentId},
 //             'Comment Submission Noted',
-//             ${`User ${group.mainComment.name} ( email: ${group.mainComment.email}) submitted a comment on blog "${blog.title}" through the website on ${formatDate(new Date())}. Details: title "${group.mainComment.title}", content "${group.mainComment.contentPera}", parent reference ${group.mainComment.parentName || 'none'}. Perform moderation to uphold content standards and facilitate engagement.`},
+//             ${`User ${group.mainComment.name} ( email: ${group.mainComment.email}) submitted a comment to blog "${blog.title}" through the website on ${formatDate(new Date())}. Details: title "${group.mainComment.title}", content "${group.mainComment.contentPera}", parent reference ${group.mainComment.parentName || 'none'}. Perform moderation to uphold content standards and facilitate engagement.`},
 //             CURRENT_TIMESTAMP
 //           )
 //         `;
@@ -359,7 +359,7 @@ const queryId = "publish";
 //               'Comment',
 //               ${replyId},
 //               'Comment Submission Noted',
-//               ${`User ${reply.name} (ID: ${reply.email}, email: ${reply.email}) submitted a comment on blog "${blog.title}"throught the website on ${formatDate(new Date())}. Details: title "${reply.title}", content "${reply.contentPera}", parent reference ${reply.parentName || 'none'}. Perform moderation to uphold content standards and facilitate engagement.`},
+//               ${`User ${reply.name} (email: ${reply.email}) replied to a comment submitted by ${reply.parentName} on the blog titled "${blog.title}" through the website on ${formatDate(new Date())}. Details: title "${reply.title}", content "${reply.contentPera}", parent reference ${reply.parentName || 'none'}. Perform moderation to uphold content standards and facilitate engagement.`},
 //               CURRENT_TIMESTAMP
 //             )
 //           `;

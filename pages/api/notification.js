@@ -15,7 +15,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
   const { method } = req;
 
   if (method === "GET") {
-//await sql`DELETE FROM notifications WHERE read = false`;
+//await sql`DELETE FROM notifications WHERE read = false OR read = true`;
     let notifications = [];
   
     if(req.query.unread == 'true'){
