@@ -182,7 +182,6 @@ const queryId = "publish";
 
    if (req.query?.id || req.query?.blogId) {
             const queryId = req.query.id || req.query.blogId;
-            console.log("Query ID:", req.query);
             let blog = null;
             try {
                 const pgBlogs = await sql`SELECT * FROM blogs WHERE id = ${queryId}`;

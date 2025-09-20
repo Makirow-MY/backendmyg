@@ -77,7 +77,7 @@ export default async function handle(req, res) {
         createdAt: review.createdat,
         updatedAt: review.updatedat
       }));
-
+ console.log("updatedComments",mappedReviews, "mappedReviews");
       return res.json(mappedReviews);
     }
 

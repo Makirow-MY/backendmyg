@@ -10,7 +10,6 @@ export default async function handle(req, res) {
 
     const { method } = req;
     const id = req.query?.id;
-     console.log("Query ID:", req.query);
     if (method === 'GET') {
         try {
             if (id) {
@@ -126,7 +125,7 @@ export default async function handle(req, res) {
                     console.log('Neon GET updated failed:', neonError);
                     //datedComments = await Comment.find().sort({ createdAt: -1 });
                 }
-                console.log("updatedComments", updatedComments);
+               
                 return res.status(200).json( updatedComments);
             }
         } catch (error) {
