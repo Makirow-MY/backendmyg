@@ -20,7 +20,7 @@ export default function Contact() {
  
     const [randomIndex, setRandomIndex] = useState(null);
  
-    
+     toast.dismiss();
  
     const [searchQ, setSearchQ] = useState('');
       const [refresh, setRefresh] = useState(false);

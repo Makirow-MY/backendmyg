@@ -69,7 +69,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
         documentationUrl, isResponsive, licenseType, supportAvailable, ...categoryFields
       } = req.body;
       const imagesArr = req.files?.map(file => `/uploads/${file.filename}`) || [ `https://picsum.photos/1920/1080?random=${Math.floor(Math.random() * 1000)}`,          
-            `https://via.placeholder.com/${Math.floor(Math.random() * 300)}`,
+                       `https://picsum.photos/1920/1080?random=${Math.floor(Math.random() * 1000)}`,
             `https://picsum.photos/1920/1080?random=${Math.floor(Math.random() * 1000)}`,
     ];
       const status = title && slug && description && projectcategory ? 'publish' : 'draft';

@@ -20,7 +20,7 @@ export default function EditVisitors() {
     const [error, setError] = useState(null);
 
  useEffect(() => {
-  toast.remove()
+  toast.dismiss();
     const fetchData = async () => {
         if (!router.isReady || !id) {
             setLoading(false);

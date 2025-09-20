@@ -46,6 +46,9 @@ export default function Header({ onToggleSidebar, isOpen, setSearch, search }) {
   useEffect(() => {
     const isDark = localStorage.getItem('darkmode');
     setDark(isDark);
+    setTimeout(() => {
+   toast.dismiss();
+}, 3000);
   }, []);
 
   useEffect(() => {
@@ -71,7 +74,7 @@ catch (error) {
   }, [router.pathname]);
 
   useEffect(() => {
-    toast.dismiss()
+    
     if (dark) {
       document.body.classList.add('light');
       localStorage.setItem('darkmode', true);

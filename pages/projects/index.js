@@ -95,6 +95,7 @@ export default function Projects() {
     };
 
     fetchData();
+    toast.dismiss();
   }, []);
      useEffect(() => {
             const filterData = () => {
