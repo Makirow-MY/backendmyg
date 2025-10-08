@@ -6,7 +6,8 @@ import { neon } from '@netlify/neon';
 import { v4 as uuidv4 } from 'uuid';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import cloudinary from "./upload";
+
 const formatDate = (date) => {
   if (!date || isNaN(date)) {
     return '';
@@ -20,6 +21,18 @@ const formatDate = (date) => {
   return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'public/uploads';
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
 async function cleanupOldNotifications() {
   try {
     // Delete from Neon
@@ -31,24 +44,7 @@ async function cleanupOldNotifications() {
 }
 
 // Configure multer storage
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadDirs = [
-            'public/uploads',
-            ];
-        uploadDirs.forEach(dir => {
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true });
-            }
-        });
-        cb(null, 'public/uploads');
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, uniqueSuffix + ext);
-    }
-});
+
 const fileFilter = (req, file, cb) => {
     const filetypes = /jpeg|jpg|png|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -73,31 +69,7 @@ export const config = {
     },
 };
 
-async function deleteImages(images) {
-    for (const imageUrl of images) {
-        try {
-            const filename = path.basename(imageUrl);
-            const backendPath = path.join(process.cwd(), 'public/uploads', filename);
-            let backendDeleted = false;
-            let frontendDeleted = false;
-            if (fs.existsSync(backendPath)) {
-                fs.unlinkSync(backendPath);
-                backendDeleted = true;
-            }
-            if (fs.existsSync(frontendPath)) {
-                fs.unlinkSync(frontendPath);
-                frontendDeleted = true;
-            }
-            if (!backendDeleted && !frontendDeleted) {
-                console.log(`File ${filename} not found in either location`);
-            } else {
-                console.log(`File ${filename} deleted ${backendDeleted ? 'from backend' : ''}${backendDeleted && frontendDeleted ? ' and ' : ''}${frontendDeleted ? 'from frontend' : ''}`);
-            }
-        } catch (error) {
-            console.error('Error deleting image:', error);
-        }
-    }
-}
+
  
 const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use process.env.DATABASE_URL if needed
 
@@ -108,8 +80,9 @@ export default async function handle(req, res) {
     if (method === "POST") {
         upload(req, res, async (err) => {
             if (err) return res.status(400).json({ success: false, message: err.message });
-            const { title, slug, description, blogcategory, tags } = req.body;
-            const images = req.files?.map(file => `/uploads/${file.filename}`) ||[
+            const { title, slug, description, blogcategory, tags, attachments } = req.body;
+            const defaultimages = // req.files?.map(file => `/uploads/${file.filename}`) ||
+            [
             `https://picsum.photos/1920/1080?random=${Math.floor(Math.random() * 1000)}`,          
             `https://picsum.photos/1920/1080?random=${Math.floor(Math.random() * 1000)}`,
             `https://picsum.photos/1920/1080?random=${Math.floor(Math.random() * 1000)}`,          
@@ -117,8 +90,51 @@ export default async function handle(req, res) {
     ];
             const status = (title && slug && description && blogcategory) ? 'publish' : 'draft';
             const id = uuidv4();
+            let AllImages = []
+            attachments.forEach(attach => {
+                        AllImages.push(attach.data)
+            })
+      console.log("{ title, slug, description, blogcategory, tags, attachments, status }", {  AllImages})
+          let images = [];
 
-            // Write to Neon
+       if (AllImages?.length > 0) {
+             for (const image of AllImages) {
+        const result = await cloudinary.v2.uploader.upload(
+            image, {
+                folder: 'myportfolio',
+                public_id: `file_${Date.now()}`,
+                resource_type: 'auto'
+            }
+
+        );
+
+        const link = result.secure_url;
+        images.push(link);
+    }
+     
+    //     for (const attachment of attachments) {
+    //     const base64Data = attachment.data;
+    //     const resource_type = attachment.type === 'image' ? 'image' :
+    //                          attachment.type === 'video' ? 'video' :
+    //                          attachment.type === 'audio' ? 'video' :
+    //                          'raw';
+    //     const uploadResponse = await cloudinary.uploader.upload(base64Data, {
+    //       resource_type: 'image',
+    //       folder: 'myportfolio',
+    //     });
+    //     uploadedAttachments.push({
+    //       attachmentUrl: uploadResponse.secure_url,
+    //       attachmentType: attachment.type,
+    //       originalName: attachment.name,
+    //       attachmentSize: attachment.size,
+    //       attachmentExt: attachment.ext || attachment.name.split(".").pop().toLowerCase(),
+    //       previewUrl: attachment.preview || uploadResponse.secure_url,
+    //       duration: attachment.duration,
+    //     });
+    //   }
+
+    }
+      // Write to Neon
             try {
                 await sql`
                     INSERT INTO blogs (
@@ -155,6 +171,8 @@ export default async function handle(req, res) {
             } catch (neonError) {
                 return res.status(500).json({ success: false, message: `Neon insert failed: ${neonError.message}` });
             }
+
+
 
             // // Write to Mongo
             // try {

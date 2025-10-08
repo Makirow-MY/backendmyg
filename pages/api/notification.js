@@ -4,7 +4,7 @@ import { Review } from '@/models/Review';
 import { defaultNotifications, generateRandomReviews } from '@/lib/default';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+
 import { neon } from '@netlify/neon';
 import { v4 as uuidv4 } from 'uuid';
 

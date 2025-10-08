@@ -12,6 +12,7 @@ import { IoPencil, IoTrash } from 'react-icons/io5';
 import { BsPenFill } from 'react-icons/bs';
 import { FiUpload } from 'react-icons/fi';
 import { useEffect } from 'react';
+//import cloudinary from './cloudinary';
 
 export default function Blog({
     _id, 
@@ -74,10 +75,21 @@ const TAGS_BY_CATEGORY = {
   ]
 };
 
+  const uploadedAttachments = [];
+
 // Then in your component:
 const [availableTags, setAvailableTags] = useState([]);
-
+ const [attachments, setAttachments] = useState([]);
 // Add this useEffect to update tags when category changes
+useEffect(() =>{
+    if (existingImages) {
+       existingImages.forEach(element => {
+    setAttachments((prevImages) => [...prevImages, { data: element, name: element}]);
+        
+       }); 
+//   (prev) => [...prev, ...validAttachments]      
+    }
+},[existingImages])
 useEffect(() => {
   if (blogcategory) {
     setAvailableTags(TAGS_BY_CATEGORY[blogcategory] || []);
@@ -92,7 +104,7 @@ async function createBlog(data) {
         await Promise.all(uploadedImagesQueue)
     }
 
-    const userData = {title, slug, images, description, blogcategory, tags};
+    const userData = {title, slug, attachments, description, blogcategory, tags};
     if (_id) {
         toast.loading("Updating Blog...")
         await axios.put("/api/blogs", {...userData, _id})
@@ -122,71 +134,124 @@ if (redirect) {
 }
     async function uploadImages(e) {
         const files = e.target?.files;
-        
-        if (!files || files.length === 0) {
+         setIsUploading(true);
+          setUploadError(null);
+        const myFiles = Array.from(e.target.files);
+        if (!myFiles || myFiles.length === 0) {
             toast.error("Please select files to upload");
             return;
         }
 
-        if ((images.length + files.length) < 3) {
-            toast.error(`You need to upload at least ${3 - images.length} more images`);
+        if ((images.length + myFiles.length) > 10) {
+            toast.error(`You can only upload atmost 10 images`);
             return;
         }
 
-        setIsUploading(true);
-        setUploadProgress(0);
-        setUploadError(null);
-
-        const formData = new FormData();
-        for (let i = 0; i < files.length; i++) {
-            formData.append('images', files[i]);
-        }
-
+          const processFile = async (file) => {
+   
+        let base64;
         try {
-            const response = await axios.post('/api/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                onUploadProgress: (progressEvent) => {
-                    const percentCompleted = Math.round(
-                        (progressEvent.loaded * 100) / progressEvent.total
-                    );
-                    setUploadProgress(percentCompleted);
-                },
-            });
-
-            // Store uploaded images with type 'uploaded'
-            setImages(prevImages => [
-                ...prevImages, 
-                ...response.data.images.map(url => ({ url, type: 'uploaded' }))
-            ]);
-            toast.success(`${files.length} image(s) uploaded successfully`);
-        } catch (error) {
-            console.error('Upload error:', error);
-            setUploadError(error.response?.data?.error || 'Error uploading images');
-            toast.error(uploadError || 'Error uploading images');
-        } finally {
-            setIsUploading(false);
-            setUploadProgress(0);
+          base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          
+        } catch (err) {
+          toast.error(`Failed to read file: ${file.name}`);
+          setUploadError(`Failed to read file: ${file.name}`);
+          return null;
         }
+        finally{
+              setIsUploading(false);
+             
+        }
+        const attachmentData = { data: base64, name: file.name };
+      
+        return attachmentData;
+      
+    };
+    const processed = await Promise.all(myFiles.map(processFile));
+    const validAttachments = processed.filter((a) => a !== null);
+    const prevLength = attachments.length;
+    setAttachments((prev) => [...prev, ...validAttachments]);
+      
+
+    //      if (attachments?.length) {
+    //   for (const attachment of attachments) {
+    //     const base64Data = attachment.data;
+    //     const resource_type = attachment.type === 'image' ? 'image' :
+    //                          attachment.type === 'video' ? 'video' :
+    //                          attachment.type === 'audio' ? 'video' :
+    //                          'raw';
+    //     const uploadResponse = await cloudinary.uploader.upload(base64Data, {
+    //       resource_type,
+    //       folder: attachment.type,
+    //     });
+    //     uploadedAttachments.push({
+    //       attachmentUrl: uploadResponse.secure_url,
+    //       attachmentType: attachment.type,
+    //       originalName: attachment.name,
+    //       attachmentSize: attachment.size,
+    //       attachmentExt: attachment.ext || attachment.name.split(".").pop().toLowerCase(),
+    //       previewUrl: attachment.preview || uploadResponse.secure_url,
+    //       duration: attachment.duration,
+    //     });
+    //   }
+    // }
+
+        // setIsUploading(true);
+        // setUploadProgress(0);
+        // setUploadError(null);
+
+        // const formData = new FormData();
+        // for (let i = 0; i < files.length; i++) {
+        //     formData.append('images', files[i]);
+        // }
+
+        // try {
+        //     const response = await axios.post('/api/upload', formData, {
+        //         headers: {
+        //             'Content-Type': 'multipart/form-data',
+        //         },
+        //         onUploadProgress: (progressEvent) => {
+        //             const percentCompleted = Math.round(
+        //                 (progressEvent.loaded * 100) / progressEvent.total
+        //             );
+        //             setUploadProgress(percentCompleted);
+        //         },
+        //     });
+
+        //     // Store uploaded images with type 'uploaded'
+        //     setImages(prevImages => [
+        //         ...prevImages, 
+        //         ...response.data.images.map(url => ({ url, type: 'uploaded' }))
+        //     ]);
+        //     toast.success(`${files.length} image(s) uploaded successfully`);
+        // } catch (error) {
+        //     console.error('Upload error:', error);
+        //     setUploadError(error.response?.data?.error || 'Error uploading images');
+        //     toast.error(uploadError || 'Error uploading images');
+        // } finally {
+        //     setIsUploading(false);
+        //     setUploadProgress(0);
+        // }
+
     }
 
     async function deleteImage(image) {
         try {
-            if (!image.url) {
-                // If image object is malformed
-                setImages(prevImages => prevImages.filter(img => img !== image));
-                return;
-            }
-            if (image.type === 'uploaded') {
-                // Only call backend for uploaded images
-                await axios.delete(`/api/upload?imageUrl=${image.url}&id=${_id}`);
+        
+            if (image.name && image.name) {
+               setAttachments(prevImages => prevImages.filter(img => img.name !== image.name));
                 toast.success('Uploaded image deleted successfully');
             } else {
                 toast.success('Pasted image URL removed successfully');
             }
             // Remove image from state regardless of type
-            setImages(prevImages => prevImages.filter(img => img.url !== image.url));
+  setAttachments(prevImages => prevImages.filter(img => img.name !== image.name));
+
         } catch (error) {
             console.error('Delete error:', error);
             if (error.response?.data?.error === 'File not found in either location') {
@@ -200,7 +265,7 @@ if (redirect) {
         const pastedUrl = e.target.value.trim();
         const urlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i;
         if (pastedUrl && urlPattern.test(pastedUrl)) {
-            setImages(prevImages => [...prevImages, { url: pastedUrl, type: 'pasted' }]);
+            setAttachments(prevImages => [...prevImages, { data: pastedUrl, name: pastedUrl }]);
             setPasteImageUrl("");
             toast.success('Image URL added successfully');
         } else if (pastedUrl) {
@@ -314,27 +379,27 @@ const handleSlugChange = (e) =>{
                             disabled={isUploading}
                         />
                         
-                        {isUploading && (
+                        {/* {isUploading && (
                             <div className='w-100 flex mt-1'>
                                 <div className="upload-progress-container">
                                     <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
                                     <span className="upload-progress-text">{uploadProgress}%</span>
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
                         {uploadError && (
                             <div className="upload-error">{uploadError}</div>
                         )}
                     
-                        {(!isUploading && images.length > 0) && (
+                        {(!isUploading && attachments.length > 0) && (
                             <ReactSortable 
-                                list={images} 
-                                setList={setImages} 
+                                list={attachments} 
+                                setList={setAttachments} 
                                 className='gap-1' 
                                 style={{display:'grid', gridTemplateColumns:'repeat(3, 1fr)'}}
                             >
-                                {images.slice(0, 3).map((image, index) => (
+                                {/* {images.slice(0, 3).map((image, index) => (
                                     <div key={index} className='uploadedimg'>
                                         <img 
                                             loading='lazy' 
@@ -351,18 +416,37 @@ const handleSlugChange = (e) =>{
                                             </button>
                                         </div>
                                     </div>
-                                ))}
+                                ))} */}
+                                 {attachments.map((attachment, index) => (
+                                   <div key={index} className='uploadedimg'>
+                                        <img 
+                                            loading='lazy' 
+                                            src={attachment.data} 
+                                            alt={`${attachment.name}`} 
+                                            className='object-cover' 
+                                        />
+                                        <div className='deleteimg'>
+                                            <button 
+                                                type='button' 
+                                                onClick={() => deleteImage(attachment)}
+                                            >
+                                                <IoTrash />
+                                            </button>
+                                        </div>
+                                    </div>
+                                  
+                                 ))}
                             </ReactSortable>
                         )}
 
-                        {(!isUploading && images.length == 0) && 
+                        {(!isUploading && attachments.length === 0) && 
                             <div className='w-100 flex mt-1'>
                                 <p>Uploaded or pasted images will appear here</p>
                             </div>
                         }
                     </div>
                     
-                    {(!isUploading && images.length > 0) && (
+                    {/* {(!isUploading && images.length > 0) && (
                         <ReactSortable 
                             list={images} 
                             setList={setImages} 
@@ -388,7 +472,7 @@ const handleSlugChange = (e) =>{
                                 </div>
                             ))}
                         </ReactSortable>
-                    )} 
+                    )}  */}
                 </div>
 
 
