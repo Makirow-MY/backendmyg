@@ -1,4 +1,3 @@
-import { mongooseConnect } from "@/lib/mongoose";
 import { Notification } from "@/models/Notification";
 import { Review } from '@/models/Review';
 import { defaultNotifications, generateRandomReviews } from '@/lib/default';

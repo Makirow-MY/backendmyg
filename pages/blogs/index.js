@@ -32,6 +32,7 @@ export default function Projects() {
       { value: "category", label: "By Project Category" }, 
       { value: "reviwed", label: "By Most Reviewed" },   
 ]);
+const router = useRouter()
       const [isDelete, setDelete] = useState(false);
       const [productInfo, setProductInfo] = useState(null);
   const [originalData, setOriginalData] = useState({

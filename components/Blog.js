@@ -1,51 +1,19 @@
-
 import ReactMarkdown from 'react-markdown';
 import MarkdownEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css';
 import Spinner from './Spinner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { ReactSortable } from 'react-sortablejs';
-import { IoPencil, IoTrash } from 'react-icons/io5';
-import { BsPenFill } from 'react-icons/bs';
+import { IoTrash } from 'react-icons/io5';
 import { FiUpload } from 'react-icons/fi';
-import { useEffect } from 'react';
-//import cloudinary from './cloudinary';
 
-export default function Blog({
-    _id, 
-    title: existingTitle,
-    slug: existingSlug,
-    description: existingDesc,
-    blogcategory: existingCat,
-    tags: existingTags,
-    images: existingImages,
-    status: existingStatus,
-}) {
-    
-    //   console.log("existingTags", existingTags, [existingTags.map(tag => `${tag}`)])
-const [redirect, setRedirect] = useState(false);
-const router = useRouter();
-  const [uploadProgress, setUploadProgress] = useState(0);
-    const [uploadError, setUploadError] = useState(null);
-const [title, setTitle] = useState(existingTitle || "");
-const [slug, setSlug] = useState(existingSlug || "");
-const [description, setDescription] = useState(existingDesc || "")
-const [blogcategory, setBlogcategory] = useState(existingCat || [])
-const [tags, setTags] = useState(existingTags || [])
-const [images, setImages] = useState(existingImages || [])
-const [status, setStatus] = useState(existingStatus || "");
-
-    const [isUploading, setIsUploading] = useState(false);
-    const [pasteImageUrl, setPasteImageUrl] = useState("");
- 
-    const uploadedImagesQueue = [];
 const TAGS_BY_CATEGORY = {
   "Graphic & UI/UX Design": [
-    "UI Design", "UX Design", "Wireframing", "Prototyping", 
-    "User Research", "Figma", "Adobe XD", "Sketch", 
+    "UI Design", "UX Design", "Wireframing", "Prototyping",
+    "User Research", "Figma", "Adobe XD", "Sketch",
     "Illustration", "Branding", "Typography", "Color Theory",
     "Logo Design", "Print Design", "Web Design", "Mobile Design"
   ],
@@ -75,415 +43,264 @@ const TAGS_BY_CATEGORY = {
   ]
 };
 
-  const uploadedAttachments = [];
+export default function Blog({
+  _id,
+  title: existingTitle,
+  slug: existingSlug,
+  description: existingDesc,
+  blogcategory: existingCat,
+  tags: existingTags,
+  images: existingImages,
+  status: existingStatus,
+}) {
+  const [redirect, setRedirect] = useState(false);
+  const router = useRouter();
+  const [title, setTitle] = useState(existingTitle || "");
+  const [slug, setSlug] = useState(existingSlug || "");
+  const [description, setDescription] = useState(existingDesc || "");
+  const [blogcategory, setBlogcategory] = useState(existingCat || "");
+  const [tags, setTags] = useState(existingTags || []);
+  const [attachments, setAttachments] = useState([]); // {url, name} or {file, name}
+  const [status, setStatus] = useState(existingStatus || "");
+  const [isUploading, setIsUploading] = useState(false);
+  const [pasteImageUrl, setPasteImageUrl] = useState("");
+  const [uploadError, setUploadError] = useState(null);
+  const [availableTags, setAvailableTags] = useState([]);
 
-// Then in your component:
-const [availableTags, setAvailableTags] = useState([]);
- const [attachments, setAttachments] = useState([]);
-// Add this useEffect to update tags when category changes
-useEffect(() =>{
-    if (existingImages) {
-       existingImages.forEach(element => {
-    setAttachments((prevImages) => [...prevImages, { data: element, name: element}]);
-        
-       }); 
-//   (prev) => [...prev, ...validAttachments]      
+  useEffect(() => {
+    if (existingImages && existingImages.length > 0) {
+      setAttachments(existingImages.map(url => ({ url, name: url.split('/').pop() })));
     }
-},[existingImages])
-useEffect(() => {
-  if (blogcategory) {
-    setAvailableTags(TAGS_BY_CATEGORY[blogcategory] || []);
-    // Reset tags when category changes to avoid mismatches
-    setTags([]);
-  }
-}, [blogcategory]);
-async function createBlog(data) {
-    data.preventDefault()
-    
-    if (isUploading) {
-        await Promise.all(uploadedImagesQueue)
+    if (existingTags && existingTags.length > 0) {
+      setTags(existingTags);
     }
+  }, [existingImages, existingTags]);
 
-    const userData = {title, slug, attachments, description, blogcategory, tags};
+  useEffect(() => {
+    if (blogcategory) {
+      setAvailableTags(TAGS_BY_CATEGORY[blogcategory] || []);
+      setTags(existingTags || []);
+    }
+  }, [blogcategory]);
+
+  async function createBlog(e) {
+    e.preventDefault();
+    if (isUploading) return;
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('slug', slug);
+    formData.append('description', description);
+    formData.append('blogcategory', blogcategory);
+    formData.append('tags', JSON.stringify(tags));
+    formData.append('status', status || (title && slug && description && blogcategory && attachments.length > 0 ? 'publish' : 'draft'));
+
+    attachments.forEach((att) => {
+      if (att.file) {
+        formData.append('images', att.file);
+      } else if (att.url) {
+        formData.append('existingImages', att.url);
+      }
+    });
+
     if (_id) {
-        toast.loading("Updating Blog...")
-        await axios.put("/api/blogs", {...userData, _id})
-        toast.success('Data updated')
-       // router.push("/blogs") 
-    }
-    else{
-        toast.loading("Creating Blog...")
-        await axios.post("/api/blogs", {...userData, _id})
-        toast.success('Blog created!');
-        //router.push("/blogs") 
+      formData.append('_id', _id);
     }
 
-    setRedirect(true);
-    
-    if (redirect) {
-        router.push("/blogs") 
-    }
-}
-
-if (redirect) {
-    setTimeout(() => {
-        router.push(  "/blogs" );
-         return null; 
-    }, 1000);
-    
-}
-    async function uploadImages(e) {
-        const files = e.target?.files;
-         setIsUploading(true);
-          setUploadError(null);
-        const myFiles = Array.from(e.target.files);
-        if (!myFiles || myFiles.length === 0) {
-            toast.error("Please select files to upload");
-            return;
-        }
-
-        if ((images.length + myFiles.length) > 10) {
-            toast.error(`You can only upload atmost 10 images`);
-            return;
-        }
-
-          const processFile = async (file) => {
-   
-        let base64;
-        try {
-          base64 = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
+    try {
+      setIsUploading(true);
+      const toastId = _id ? toast.loading("Updating Blog...") : toast.loading("Creating Blog...");
+      const response = _id
+        ? await axios.put("/api/blogs", formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+        : await axios.post("/api/blogs", formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
           });
-          
-        } catch (err) {
-          toast.error(`Failed to read file: ${file.name}`);
-          setUploadError(`Failed to read file: ${file.name}`);
-          return null;
-        }
-        finally{
-              setIsUploading(false);
-             
-        }
-        const attachmentData = { data: base64, name: file.name };
-      
-        return attachmentData;
-      
-    };
-    const processed = await Promise.all(myFiles.map(processFile));
-    const validAttachments = processed.filter((a) => a !== null);
-    const prevLength = attachments.length;
-    setAttachments((prev) => [...prev, ...validAttachments]);
-      
-
-    //      if (attachments?.length) {
-    //   for (const attachment of attachments) {
-    //     const base64Data = attachment.data;
-    //     const resource_type = attachment.type === 'image' ? 'image' :
-    //                          attachment.type === 'video' ? 'video' :
-    //                          attachment.type === 'audio' ? 'video' :
-    //                          'raw';
-    //     const uploadResponse = await cloudinary.uploader.upload(base64Data, {
-    //       resource_type,
-    //       folder: attachment.type,
-    //     });
-    //     uploadedAttachments.push({
-    //       attachmentUrl: uploadResponse.secure_url,
-    //       attachmentType: attachment.type,
-    //       originalName: attachment.name,
-    //       attachmentSize: attachment.size,
-    //       attachmentExt: attachment.ext || attachment.name.split(".").pop().toLowerCase(),
-    //       previewUrl: attachment.preview || uploadResponse.secure_url,
-    //       duration: attachment.duration,
-    //     });
-    //   }
-    // }
-
-        // setIsUploading(true);
-        // setUploadProgress(0);
-        // setUploadError(null);
-
-        // const formData = new FormData();
-        // for (let i = 0; i < files.length; i++) {
-        //     formData.append('images', files[i]);
-        // }
-
-        // try {
-        //     const response = await axios.post('/api/upload', formData, {
-        //         headers: {
-        //             'Content-Type': 'multipart/form-data',
-        //         },
-        //         onUploadProgress: (progressEvent) => {
-        //             const percentCompleted = Math.round(
-        //                 (progressEvent.loaded * 100) / progressEvent.total
-        //             );
-        //             setUploadProgress(percentCompleted);
-        //         },
-        //     });
-
-        //     // Store uploaded images with type 'uploaded'
-        //     setImages(prevImages => [
-        //         ...prevImages, 
-        //         ...response.data.images.map(url => ({ url, type: 'uploaded' }))
-        //     ]);
-        //     toast.success(`${files.length} image(s) uploaded successfully`);
-        // } catch (error) {
-        //     console.error('Upload error:', error);
-        //     setUploadError(error.response?.data?.error || 'Error uploading images');
-        //     toast.error(uploadError || 'Error uploading images');
-        // } finally {
-        //     setIsUploading(false);
-        //     setUploadProgress(0);
-        // }
-
+      toast.success(_id ? 'Blog updated' : 'Blog created!', { id: toastId });
+      setRedirect(true);
+    } catch (error) {
+      toast.error(error.response?.data?.message || (_id ? 'Failed to update blog' : 'Failed to create blog'));
+      console.error('Save error:', error);
+    } finally {
+      setIsUploading(false);
     }
+  }
 
-    async function deleteImage(image) {
-        try {
-        
-            if (image.name && image.name) {
-               setAttachments(prevImages => prevImages.filter(img => img.name !== image.name));
-                toast.success('Uploaded image deleted successfully');
-            } else {
-                toast.success('Pasted image URL removed successfully');
-            }
-            // Remove image from state regardless of type
-  setAttachments(prevImages => prevImages.filter(img => img.name !== image.name));
+  if (redirect) {
+    setTimeout(() => router.push("/blogs"), 1000);
+    return null;
+  }
 
-        } catch (error) {
-            console.error('Delete error:', error);
-            if (error.response?.data?.error === 'File not found in either location') {
-            setImages([]);
-            }
-            toast.error(error.response?.data?.error || 'Error deleting image');
-        }
+  function uploadImages(e) {
+    const files = e.target?.files;
+    if (!files || files.length === 0) {
+      toast.error("Please select files to upload");
+      return;
     }
-
-    function handlePasteImage(e) {
-        const pastedUrl = e.target.value.trim();
-        const urlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i;
-        if (pastedUrl && urlPattern.test(pastedUrl)) {
-            setAttachments(prevImages => [...prevImages, { data: pastedUrl, name: pastedUrl }]);
-            setPasteImageUrl("");
-            toast.success('Image URL added successfully');
-        } else if (pastedUrl) {
-            toast.error('Please paste a valid image URL (png, jpg, jpeg, gif)');
-        }
+    if ((attachments.length + files.length) > 10) {
+      toast.error(`You can only upload at most 10 images`);
+      return;
     }
+    setAttachments((prev) => [...prev, ...Array.from(files).map(file => ({ file, name: file.name }))]);
+  }
 
-const handleSlugChange = (e) =>{
-    const input = e.target.value;
-    const newSlug = input.replace(/\s+/g, '-');
-    setSlug(newSlug)
-}
+  function deleteImage(image) {
+    setAttachments(prev => prev.filter(att => att.name !== image.name));
+    toast.success('Image removed successfully');
+  }
 
-    return <>
-<form className='addWebsiteform' onSubmit={createBlog}>
+  function handlePasteImage(e) {
+    const pastedUrl = e.target.value.trim();
+    const urlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i;
+    if (pastedUrl && urlPattern.test(pastedUrl)) {
+      if (attachments.length >= 10) {
+        toast.error(`You can only upload at most 10 images`);
+        return;
+      }
+      setAttachments(prev => [...prev, { url: pastedUrl, name: pastedUrl.split('/').pop() }]);
+      setPasteImageUrl("");
+      toast.success('Image URL added successfully');
+    } else if (pastedUrl) {
+      toast.error('Please paste a valid image URL (png, jpg, jpeg, gif)');
+    }
+  }
 
-<div className='w-100 flex flex-col flex-left mb-2'>
-      <label htmlFor='title'>Title</label>
-      <input className='input' value={title} onChange={(e) => {
-        handleSlugChange(e)
-        setTitle(e.target.value)}} type='text' id='title' placeholder='Enter small title' />
-    </div>
+  const handleSlugChange = (e) => {
+    const newSlug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    setSlug(newSlug);
+  };
 
-   <input className='input' value={slug} onChange={(e) => handleSlugChange(e)} type='hidden' id='slug' placeholder='Enter slug url' />
-   
-
-   <div className='w-100 flex flex-col flex-left mb-2'>
-                        <label htmlFor='category'>Blog setActiveCategory</label>
-                        <select 
-                            name='category' 
-                            required 
-                            id='category' 
-                            value={blogcategory} 
-                            onChange={(e) => setBlogcategory(e.target.value)}
-                        >
-                            <option value="">Select Your Field</option>
-                            <option value="Graphic & UI/UX Design">Graphic & UI/UX Design</option>
-                            <option value="Website Development">Website Development</option>
-                            <option value="Mobile Development">Mobile Development</option>
-                            <option value="Network Design">Network Design</option>
-                            <option value="Video Editing">Video Editing</option>
-                        </select>
-                    </div>
-    
-       <div className='description w-100 flex flex-col flex-left mb-2'>
-            <label htmlFor='description'>
-                        Blog Description
-            </label>
-            <textarea className='w-100 descript'
-            required
-             value={description}
-             rows={6}
-             cols={6}
-             placeholder='Write something about your blog'
-             onChange={(e) => setDescription(e.target.value)}
-             >
-
-            </textarea>
-         
+  return (
+    <form className='addWebsiteform' onSubmit={createBlog}>
+      <div className='w-100 flex flex-col flex-left mb-2'>
+        <label htmlFor='title'>Title* <span className='text-sm text-gray-500'>(e.g., My Blog Post)</span></label>
+        <input
+          className='input'
+          required
+          value={title}
+          onChange={(e) => {
+            handleSlugChange(e);
+            setTitle(e.target.value);
+          }}
+          type='text'
+          id='title'
+          placeholder='Enter blog title'
+        />
       </div>
-{
-    blogcategory !== "" && <div className='w-100 flex flex-col flex-left mb-2'>
-  <label htmlFor='tags'>Blog Tags* (Select multiple)</label>
-  <select 
-    id='tags' 
-    name='tags' 
-    multiple 
-    value={tags} 
-    onChange={(e) => setTags(Array.from(e.target.selectedOptions, option => option.value))}
-    className='input'
-  >
-    {availableTags.map(tag => (
-      <option key={tag} value={tag}>{tag}</option>
-    ))}
-  </select>
-</div>
-}
-     
-
-
- {/* Project Visuals */}
-                <div className='w-100 flex flex-col flex-left mb-2'>
-                    <label>Paste Image URL</label>
-                    <input 
-                        className='input' 
-                        value={pasteImageUrl}
-                        onChange={(e) => {setPasteImageUrl(e.target.value)
-                            handlePasteImage(e)
-                        }}
-                        onPaste={handlePasteImage}
-                         onBlur={handlePasteImage}
-                         onFocus={handlePasteImage}
-                        type='text'
-                        placeholder='Paste image URL (e.g., https://example.com/image.jpg)'
-                    />
-                </div>
-
-                <div className='w-100 flex flex-col flex-left mb-2'>
-                    <label>Project Visuals* (Minimum 3 images)</label>
-                    <div className='w-100' style={{display:'flex', gap:'1rem', flexShrink:'-1'}}>
-                        <label className='fileInput' htmlFor='fileInput' style={{ flexShrink:0 }}>
-                            <FiUpload/> Upload Images<br/>(Showcase your work)
-                        </label>
-                        <input 
-                            type='file' 
-                            style={{display:'none'}} 
-                            id='fileInput' 
-                            onChange={uploadImages} 
-                            accept='image/*' 
-                            multiple 
-                            disabled={isUploading}
-                        />
-                        
-                        {/* {isUploading && (
-                            <div className='w-100 flex mt-1'>
-                                <div className="upload-progress-container">
-                                    <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }}></div>
-                                    <span className="upload-progress-text">{uploadProgress}%</span>
-                                </div>
-                            </div>
-                        )} */}
-
-                        {uploadError && (
-                            <div className="upload-error">{uploadError}</div>
-                        )}
-                    
-                        {(!isUploading && attachments.length > 0) && (
-                            <ReactSortable 
-                                list={attachments} 
-                                setList={setAttachments} 
-                                className='gap-1' 
-                                style={{display:'grid', gridTemplateColumns:'repeat(3, 1fr)'}}
-                            >
-                                {/* {images.slice(0, 3).map((image, index) => (
-                                    <div key={index} className='uploadedimg'>
-                                        <img 
-                                            loading='lazy' 
-                                            src={image.url ? image.url : image} 
-                                            alt={`Project ${index + 1}`} 
-                                            className='object-cover' 
-                                        />
-                                        <div className='deleteimg'>
-                                            <button 
-                                                type='button' 
-                                                onClick={() => deleteImage(image)}
-                                            >
-                                                <IoTrash />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))} */}
-                                 {attachments.map((attachment, index) => (
-                                   <div key={index} className='uploadedimg'>
-                                        <img 
-                                            loading='lazy' 
-                                            src={attachment.data} 
-                                            alt={`${attachment.name}`} 
-                                            className='object-cover' 
-                                        />
-                                        <div className='deleteimg'>
-                                            <button 
-                                                type='button' 
-                                                onClick={() => deleteImage(attachment)}
-                                            >
-                                                <IoTrash />
-                                            </button>
-                                        </div>
-                                    </div>
-                                  
-                                 ))}
-                            </ReactSortable>
-                        )}
-
-                        {(!isUploading && attachments.length === 0) && 
-                            <div className='w-100 flex mt-1'>
-                                <p>Uploaded or pasted images will appear here</p>
-                            </div>
-                        }
-                    </div>
-                    
-                    {/* {(!isUploading && images.length > 0) && (
-                        <ReactSortable 
-                            list={images} 
-                            setList={setImages} 
-                            className='gap-1' 
-                            style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)'}}
-                        >
-                            {images.slice(3, 9).map((image, index) => (
-                                <div key={index} className='uploadedimg'>
-                                    <img 
-                                        loading='lazy' 
-                                       src={image.url ? image.url : image} 
-                                        alt={`Project ${index + 4}`} 
-                                        className='object-cover' 
-                                    />
-                                    <div className='deleteimg'>
-                                        <button 
-                                            type='button' 
-                                            onClick={() => deleteImage(image)}
-                                        >
-                                            <IoTrash />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </ReactSortable>
-                    )}  */}
-                </div>
-
-
-
-
-
-        <div className='w-100 mb-2'>
-            <button type='submit' className='w-100 addwebbtn flex-center'>SAVE BLOG</button>
+      <input className='input' value={slug} onChange={handleSlugChange} type='hidden' id='slug' />
+      <div className='w-100 flex flex-col flex-left mb-2'>
+        <label htmlFor='category'>Blog Category*</label>
+        <select
+          name='category'
+          required
+          id='category'
+          value={blogcategory}
+          onChange={(e) => setBlogcategory(e.target.value)}
+          className='input'
+        >
+          <option value="">Select Your Field</option>
+          {Object.keys(TAGS_BY_CATEGORY).map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+      <div className='description w-100 flex flex-col flex-left mb-2'>
+        <label htmlFor='description'>Blog Description* <span className='text-sm text-gray-500'>(Write your blog content)</span></label>
+        <MarkdownEditor
+          value={description}
+          style={{ height: '400px' }}
+          renderHTML={(text) => <ReactMarkdown>{text}</ReactMarkdown>}
+          onChange={({ text }) => setDescription(text)}
+          placeholder='Write something about your blog (Markdown supported)'
+        />
+      </div>
+      {blogcategory && (
+        <div className='w-100 flex flex-col flex-left mb-2'>
+          <label htmlFor='tags'>Blog Tags* <span className='text-sm text-gray-500'>(Select multiple)</span></label>
+          <select
+            id='tags'
+            name='tags'
+            multiple
+            value={tags}
+            onChange={(e) => setTags(Array.from(e.target.selectedOptions, option => option.value))}
+            className='input'
+          >
+            {availableTags.map(tag => (
+              <option key={tag} value={tag}>{tag}</option>
+            ))}
+          </select>
         </div>
-
-</form>
-    </>
+      )}
+      <div className='w-100 flex flex-col flex-left mb-2'>
+        <label>Paste Image URL <span className='text-sm text-gray-500'>(png, jpg, jpeg, gif)</span></label>
+        <input
+          className='input'
+          value={pasteImageUrl}
+          onChange={(e) => setPasteImageUrl(e.target.value)}
+          onPaste={handlePasteImage}
+          onBlur={handlePasteImage}
+          type='text'
+          placeholder='e.g., https://example.com/image.jpg'
+        />
+      </div>
+      <div className='w-100 flex flex-col flex-left mb-2'>
+        <label>Blog Visuals* <span className='text-sm text-gray-500'>(Maximum 10 images)</span></label>
+        <div className='w-100' style={{ display: 'flex', gap: '1rem', flexShrink: '-1' }}>
+          <label className='fileInput' htmlFor='fileInput' style={{ flexShrink: 0 }}>
+            <FiUpload /> Upload Images<br />(Showcase your work)
+          </label>
+          <input
+            type='file'
+            style={{ display: 'none' }}
+            id='fileInput'
+            onChange={uploadImages}
+            accept='image/*'
+            multiple
+            disabled={isUploading}
+          />
+          {uploadError && (
+            <div className="upload-error">{uploadError}</div>
+          )}
+          {attachments.length > 0 && (
+            <ReactSortable
+              list={attachments}
+              setList={setAttachments}
+              className='gap-1'
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}
+            >
+              {attachments.map((attachment, index) => (
+                <div key={index} className='uploadedimg'>
+                  <img
+                    loading='lazy'
+                    src={attachment.url || URL.createObjectURL(attachment.file)}
+                    alt={attachment.name}
+                    className='object-cover'
+                  />
+                  <div className='deleteimg'>
+                    <button
+                      type='button'
+                      onClick={() => deleteImage(attachment)}
+                    >
+                      <IoTrash />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </ReactSortable>
+          )}
+          {attachments.length === 0 && (
+            <div className='w-100 flex mt-1'>
+              <p>Uploaded or pasted images will appear here</p>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className='w-100 mb-2'>
+        <button type='submit' className='w-100 addwebbtn flex-center' disabled={isUploading}>
+          {isUploading ? <Spinner /> : 'SAVE BLOG'}
+        </button>
+      </div>
+    </form>
+  );
 }
-

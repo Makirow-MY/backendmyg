@@ -1,4 +1,3 @@
-import { mongooseConnect } from "@/lib/mongoose";
 import { Blog } from "@/models/Blog";
 import { Comment } from "@/models/Comment";
 import { neon } from '@netlify/neon';

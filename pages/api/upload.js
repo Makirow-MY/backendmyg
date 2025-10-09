@@ -1,5 +1,4 @@
 
-import { mongooseConnect } from "@/lib/mongoose";
 import cloudinary  from "cloudinary";
 import multiparty from "multiparty";
 

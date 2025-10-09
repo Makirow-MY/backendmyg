@@ -1,4 +1,3 @@
-import { mongooseConnect } from "@/lib/mongoose";
 import { Shop } from "@/models/Shop";
 
 

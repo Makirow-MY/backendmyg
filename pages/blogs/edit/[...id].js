@@ -20,7 +20,7 @@ export default function EditProduct() {
           }
           else{
               axios.get('/api/blogs?id=' + id).then(res => {
-               // console.log("id", id, "res", res);
+                console.log("res.data.data", res.data.data);
                 setProductInfo(res.data.data )
               })
              // console.log("productInfo", productInfo);
