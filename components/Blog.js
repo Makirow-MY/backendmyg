@@ -121,7 +121,7 @@ export default function Blog({
       setRedirect(true);
     } catch (error) {
       toast.error(error.response?.data?.message || (_id ? 'Failed to update blog' : 'Failed to create blog'));
-      console.error('Save error:', error);
+      console.log('Save error:', error);
     } finally {
       setIsUploading(false);
     }

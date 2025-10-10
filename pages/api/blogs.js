@@ -89,7 +89,7 @@ export default async function handle(req, res) {
             newImageUrls.push(result.secure_url);
             fs.unlinkSync(file.path); // Delete temp local file
           } catch (error) {
-            console.error('Cloudinary upload error:', error);
+           console.log('Cloudinary upload error:', error);
           }
         }
       }
@@ -117,7 +117,7 @@ export default async function handle(req, res) {
                 CURRENT_TIMESTAMP
               )`;
           } catch (neonNotifError) {
-            console.error('Neon notification insert failed:', neonNotifError);
+            console.log('Neon notification insert failed:', neonNotifError);
           }
           return res.json({ success: true, message: "Blog Added Successfully" });
         } catch (neonError) {
@@ -150,7 +150,7 @@ export default async function handle(req, res) {
                 CURRENT_TIMESTAMP
               )`;
           } catch (neonNotifError) {
-            console.error('Neon notification insert failed:', neonNotifError);
+          console.log('Neon notification insert failed:', neonNotifError);
           }
           return res.json({ success: true, message: "Blog updated successfully" });
         } catch (neonError) {
@@ -181,8 +181,7 @@ export default async function handle(req, res) {
           };
         }
       } catch (neonError) {
-        console.error('Neon GET single failed:', neonError);
-        blog = await Blog.findById(queryId); // Mongo fallback
+        console.log('Neon GET single failed:', neonError);
       }
       return res.json(blog ? { success: true, data: blog } : { success: false, message: "Blog not found" });
     } else {
@@ -203,8 +202,7 @@ export default async function handle(req, res) {
           updatedAt: pgBlog.updatedat
         }));
       } catch (neonError) {
-        console.error('Neon GET all failed:', neonError);
-        blogs = await Blog.find().sort({ createdAt: -1 }); // Mongo fallback
+        console.log('Neon GET all failed:', neonError);
       }
       return res.json({ success: true, data: blogs });
     }
@@ -225,7 +223,7 @@ export default async function handle(req, res) {
             CURRENT_TIMESTAMP
           )`;
       } catch (neonNotifError) {
-        console.error('Neon notification insert failed:', neonNotifError);
+        console.log('Neon notification insert failed:', neonNotifError);
       }
       let blogs = [];
       try {
@@ -244,7 +242,7 @@ export default async function handle(req, res) {
           updatedAt: pgBlog.updatedat
         }));
       } catch (neonError) {
-        console.error('Neon GET all after delete failed:', neonError);
+        console.log('Neon GET all after delete failed:', neonError);
       }
       return res.json({ success: true, data: blogs, message: "Blog deleted Successfully" });
     } catch (neonError) {
@@ -297,7 +295,7 @@ export default async function handle(req, res) {
 //     // Delete from Neon
 //     await sql`DELETE FROM notifications WHERE createddate < CURRENT_DATE - INTERVAL '3 months'`;
 //   } catch (neonError) {
-//     console.error('Neon notification cleanup failed:', neonError);
+//     console.log('Neon notification cleanup failed:', neonError);
 //   }
 
 // }
@@ -377,7 +375,7 @@ export default async function handle(req, res) {
 //             CURRENT_TIMESTAMP
 //           )`;
 //       } catch (neonNotifError) {
-//         console.error('Neon notification insert failed:', neonNotifError);
+//         console.log('Neon notification insert failed:', neonNotifError);
 //         return res.json({
 //           success: false,
 //           message: `Failed to notify admin about this action`
@@ -414,7 +412,7 @@ export default async function handle(req, res) {
 //                     };
 //                 }
 //             } catch (neonError) {
-//                 console.error('Neon GET single failed:', neonError);
+//                 console.log('Neon GET single failed:', neonError);
 //             }
           
 //             if (blog) {
@@ -480,7 +478,7 @@ export default async function handle(req, res) {
 // //       `;
 // //     } catch (neonNotifError) {
        
-// //       console.error('Neon blog notification insert failed:', neonNotifError);
+// //       console.log('Neon blog notification insert failed:', neonNotifError);
 // //    //eturn
 // //     }
 
@@ -589,7 +587,7 @@ export default async function handle(req, res) {
 // //           WHERE id = ${mainCommentId}
 // //         `;
 // //       } catch (commentError) {
-// //      // console.error(`Error processing comments for blog "${blog.title}":`, commentError);
+// //      // console.log(`Error processing comments for blog "${blog.title}":`, commentError);
 // //         // Continue to next group without stopping
 // //       }
 // //     }
@@ -624,7 +622,7 @@ export default async function handle(req, res) {
 //                     updatedAt: pgBlog.updatedat
 //                 }));
 //             } catch (neonError) {
-//                 console.error('Neon GET all failed:', neonError);
+//                 console.log('Neon GET all failed:', neonError);
 //                 blogs = await Blog.find().sort({ createdAt: -1 });
 //             }
 
@@ -690,7 +688,7 @@ export default async function handle(req, res) {
 //           });
 //           images.push(result.secure_url);
 //         } catch (error) {
-//           console.error('Cloudinary upload error:', error);
+//           console.log('Cloudinary upload error:', error);
 //           // Continue processing other images
 //         }
 //       }
@@ -719,7 +717,7 @@ export default async function handle(req, res) {
 //           CURRENT_TIMESTAMP
 //         )`;
 //     } catch (neonNotifError) {
-//       console.error('Neon notification insert failed:', neonNotifError);
+//       console.log('Neon notification insert failed:', neonNotifError);
 //     }
 //     return res.json({ success: true, message: "Blog updated successfully" });
 //   } catch (neonError) {
@@ -751,13 +749,13 @@ export default async function handle(req, res) {
 //                             CURRENT_TIMESTAMP
 //                         )`;
 //                 } catch (neonNotifError) {
-//                     console.error('Neon notification insert failed:', neonNotifError);
+//                     console.log('Neon notification insert failed:', neonNotifError);
 //                 }
 //    res.json({ success: true, message: "Blog deleted Successfully" });
 
             
 //         } catch (neonError) {
-//             console.error('Neon delete failed:', neonError);
+//             console.log('Neon delete failed:', neonError);
 //         }
      
 //         // Fetch remaining blogs
@@ -782,7 +780,7 @@ export default async function handle(req, res) {
 //             data: blogs
 //         });
 //         } catch (neonError) {
-//             console.error('Neon GET all after delete failed:', neonError);
+//             console.log('Neon GET all after delete failed:', neonError);
 //             return res.json({
 //             success: false,
 //             message: "Failed to load"
@@ -932,7 +930,7 @@ export default async function handle(req, res) {
                        
 // //                                   console.log( `File deleted ${backendDeleted ? 'from backend' : ''}${backendDeleted && frontendDeleted ? ' and ' : ''}${frontendDeleted ? 'from frontend' : ''}`);
 // //                                } catch (error) {
-// //                                    console.error('Error occurred while deleting image:', error);
+// //                                    console.log('Error occurred while deleting image:', error);
 // //                                     return res.json({
 // //                        success: false,
 // //                        message: "Error occurred while deleting image",
@@ -951,7 +949,7 @@ export default async function handle(req, res) {
 
        
 // //          } catch (error) {
-// //            console.error("Server error:", error);
+// //            console.log("Server error:", error);
 // //            return res.status(500).json({ 
 // //              success: false, 
 // //              message: "Internal server error" 
@@ -1013,7 +1011,7 @@ export default async function handle(req, res) {
 // //                     // Add reply comment IDs to blog
 // //                     commentIds.push(...createdReplies.map(reply => reply._id));
 // //                 } catch (commentError) {
-// //                     console.error(`Error processing comments for blog "${blog.title}":`, commentError);
+// //                     console.log(`Error processing comments for blog "${blog.title}":`, commentError);
 // //                 }
 // //             }
 
@@ -1028,7 +1026,7 @@ export default async function handle(req, res) {
 // //         }
 // //     }
 // // } catch (error) {
-// //     console.error("Error populating default blogs or comments:", error);
+// //     console.log("Error populating default blogs or comments:", error);
 // // }
 
 
@@ -1103,7 +1101,7 @@ export default async function handle(req, res) {
                           
 // //                                      console.log( `File deleted ${backendDeleted ? 'from backend' : ''}${backendDeleted && frontendDeleted ? ' and ' : ''}${frontendDeleted ? 'from frontend' : ''}`);
 // //                                   } catch (error) {
-// //                                       console.error('Error occurred while deleting image:', error);
+// //                                       console.log('Error occurred while deleting image:', error);
 // //                                        return res.json({
 // //                           success: false,
 // //                           message: "Error occurred while deleting image",
@@ -1135,7 +1133,7 @@ export default async function handle(req, res) {
 // //                     }
           
 // //             } catch (error) {
-// //               console.error("Server error:", error);
+// //               console.log("Server error:", error);
 // //               return res.status(500).json({ 
 // //                 success: false, 
 // //                 message: "Internal server error" 

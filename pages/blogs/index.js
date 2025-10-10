@@ -15,12 +15,14 @@ import LoginLayout from "@/components/LoginLayout";
 import { useSearch } from "../../components/search";
 import UserTable from "../UserTable";
 import Head from "next/head";
+import Spinner from "@/components/Spinner";
 
 export default function Projects() {
 
   const [allData, setAllData] = useState([]);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+   const [isloading, setIsLoading] = useState(true);
   const [currP, setCurrP] = useState(1);
   const [pagePage, setPagePage] = useState(6);
   const { search, setSearch } = useSearch();
@@ -64,7 +66,7 @@ const router = useRouter()
         setLoading(false);
       
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.log('Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
         setLoading(false);
       }
@@ -173,27 +175,29 @@ const router = useRouter()
   return new Intl.DateTimeFormat('en-US', options).format(date);
 }
       async function chooseDel(id) {
-         axios.get('/api/blogs?id=' + id).then(res => {
+        setIsLoading(true)
+          setDelete(true)
+      await   axios.get('/api/blogs?id=' + id).then(res => {
              //console.log("id", id, "res", res);
              setProductInfo(res.data.data )
            })
 //console.log("productInfo", productInfo);
-           setDelete(true)
+         setIsLoading(false)
+         
       }
 
             function goBack() {
        // console.log("BlogAllData", BlogAllData)
          setDelete(false);
-        router.push('/projects/process1');
+        router.push('/blogs/process1');
          
      }
 
      async function deletBlog(id) {
   try {
-    console.log("Deleting project with ID:", id);
     
     // Use DELETE instead of POST for semantic correctness
-     axios.delete('/api/blogs?blogId=' + id).then(res => {
+   await  axios.delete('/api/blogs?blogId=' + id).then(res => {
                setOriginalData({ reviews: res.data.data });
        toast.success("Blog Deleted Successfully")
        setDelete(false);
@@ -203,14 +207,14 @@ const router = useRouter()
       setLoading(false);
       goBack();
               }).catch ((error) => {
-    console.error("Delete error:", error);
+    console.log("Delete error:", error);
     setLoading(false);
    // toast.error(error.response?.data?.message || "Failed to delete project");
   })
 
 
   } catch (error) {
-    console.error("Delete error:", error);
+    console.log("Delete error:", error);
     setLoading(false);
     toast.error(error.response?.data?.message || "Failed to delete project");
   }
@@ -378,7 +382,7 @@ const router = useRouter()
 
        {
 
-                    isDelete && (
+                    isDelete && !isloading && (
                             <div className="deletesec">
                                 <div className="pot" >
                                     <div className="deletecard">
@@ -387,7 +391,7 @@ const router = useRouter()
                                                     <p className="cookieDescription">Beware, this action can not be reverse</p>
                                                     <div className="buttonContainer">
                                                            <button className="acceptButton" onClick={() => {deletBlog(productInfo._id),
-                                                            setDelete(false), router.push('/process1')
+                                                            setDelete(false), router.push('/blogs/process1')
                                                            }}>Delete</button>
                                                            <button className="declineButton" onClick={() => setDelete(false)}>Cancel</button>
                                                     </div>
@@ -400,6 +404,22 @@ const router = useRouter()
      
 
 }
+
+       {
+
+                    isDelete && isloading && (
+                            <div className="deletesec">
+                                <div className="pot" >
+                                   <Spinner/>
+                                                   </div>
+                            </div>
+                                                   
+                                 
+                    )
+     
+
+}
+
 
     </LoginLayout>
   );

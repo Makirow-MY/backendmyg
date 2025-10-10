@@ -52,7 +52,7 @@ export default function EditVisitors() {
         } catch (error) {
             const errorMsg = error.response?.data?.message || error.message;
             toast.error(errorMsg || 'An unexpected error occurred');
-            console.error('Error:', error);
+           console.log('Error:', error);
         } finally {
             setLoading(false);
         }

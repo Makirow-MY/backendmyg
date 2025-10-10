@@ -64,7 +64,7 @@ const [originalData, setOriginalData] = useState({
         setLoading(false);
       
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.log('Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
         setLoading(false);
       }
@@ -206,14 +206,14 @@ const [originalData, setOriginalData] = useState({
       setLoading(false);
       goBack();
               }).catch ((error) => {
-    console.error("Delete error:", error);
+    console.log("Delete error:", error);
     setLoading(false);
     toast.error(error.response?.data?.message || "Failed to delete project");
   })
 
     
   } catch (error) {
-    console.error("Delete error:", error);
+    console.log("Delete error:", error);
     setLoading(false);
     toast.error(error.response?.data?.message || "Failed to delete project");
   }

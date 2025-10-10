@@ -61,7 +61,7 @@ export default function Setting() {
         }
       } catch (error) {
         toast.error("Failed to fetch user data");
-        console.error(error);
+        console.log(error);
       }
     };
     fetchUserData();
@@ -102,7 +102,7 @@ export default function Setting() {
       }
     } catch (error) {
       toast.error("Server error during update");
-      console.error(error);
+      console.log(error);
     }
   };
 

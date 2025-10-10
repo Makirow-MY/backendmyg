@@ -19,16 +19,16 @@
     --main-hover-color: rgb(4, 133, 70);
 }
 .starRating svg{
-      color: goldenrod;
+      color: var(--primary-color);
       font-size: 20px;
 }
 
 .starRating.rate svg{
-      color: goldenrod;
+      color: var(--primary-color);
       font-size: 30px;
 }
 .dark .starRating.rate svg{
-      color: goldenrod;
+      color: var(--primary-color);
       font-size: 30px;
 }
 /* Typography */
@@ -749,12 +749,31 @@ button.button:hover{
 
   .galaxy-grid {
     display: flex;
-   align-items: center;
-   justify-content: flex-start;
-   flex-shrink: -1;
-    gap: 1.5rem;
+  justify-content: flex-start;
+   flex-shrink: 0 !important;
+    gap: 1rem;
     margin-bottom: 2rem;
   }
+  .review-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.review-item {
+  padding: 1rem;
+  border-radius: 5px;
+}
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.reviewer-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
 
   @media (max-width: 768px) {
     .galaxy-grid {
@@ -765,8 +784,8 @@ button.button:hover{
 
   .info-column {
     padding: 1.5rem;
-    width: 100%;
-     flex-shrink: -1;
+    width: calc(100% - 250px) !important;
+     flex-shrink: 0;
     border-radius: 10px;
   }
 
@@ -786,7 +805,9 @@ button.button:hover{
     font-weight: 400px;
 
   }
-
+.review-item.nebula-bg p{
+     padding: .5rem 0;
+}
   .glowing-label {
     color: var(--week-white);
     font-size: 16px;

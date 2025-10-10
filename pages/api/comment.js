@@ -36,7 +36,7 @@ export default async function handle(req, res) {
                         };
                     }
                 } catch (neonError) {
-                    console.error('Neon GET single failed:', neonError);
+                   console.log('Neon GET single failed:', neonError);
                 }
              
                 if (!comment) {
@@ -85,14 +85,14 @@ export default async function handle(req, res) {
                             blogExists = true;
                         }
                     } catch (neonError) {
-                        console.error('Neon blog check failed:', neonError);
+                       console.log('Neon blog check failed:', neonError);
                     }
                     
                     if (!blogExists) {
                         try {
                             await sql`DELETE FROM comments WHERE id = ${comment._id}`;
                         } catch (neonError) {
-                            console.error('Neon delete comment failed:', neonError);
+                           console.log('Neon delete comment failed:', neonError);
                         }
                        //wait Comment.deleteOne({ _id: comment._id });
                     }
@@ -128,7 +128,7 @@ export default async function handle(req, res) {
                 return res.status(200).json( updatedComments);
             }
         } catch (error) {
-            console.error("Error fetching comments:", error);
+           console.log("Error fetching comments:", error);
             return res.status(500).json({ success: false, message: "Failed to fetch comments" });
         }
     } else {

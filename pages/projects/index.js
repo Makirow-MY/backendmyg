@@ -88,7 +88,7 @@ export default function Projects() {
         setLoading(false);
       
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.log('Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
         setLoading(false);
       }
@@ -216,12 +216,12 @@ export default function Projects() {
         setLoading(false);
         goBack();
       }).catch((error) => {
-        console.error("Delete error:", error);
+        console.log("Delete error:", error);
         setLoading(false);
         toast.error(error.response?.data?.message || "Failed to delete project");
       });
     } catch (error) {
-      console.error("Delete error:", error);
+      console.log("Delete error:", error);
       setLoading(false);
       toast.error(error.response?.data?.message || "Failed to delete project");
     }
@@ -362,7 +362,7 @@ export default function Projects() {
                         <td>{item.projectType}</td>
                         <td>
                           {mainFilter === 'For Sale' && `$${item.price}`}
-                          {mainFilter !== 'For Sale' && `${item.client}`}
+                          {mainFilter !== 'For Sale' && `${item.client ? item.client : "For Myself"}`}
                         </td>
                         <td>
                           <StarRating rating={calculateAverageRating(item.review)} />

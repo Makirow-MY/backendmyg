@@ -61,6 +61,7 @@ export default async function handleproj(req, res) {
       if (req.query?.id || req.query?.projId) {
         const queryId = req.query.id || req.query.projId;
         let project = null;
+        let ProjectReviews = [];  
         try {
           const pgProjects = await sql`SELECT * FROM projects WHERE id = ${queryId}`;
           if (pgProjects.length > 0) {
@@ -91,18 +92,73 @@ export default async function handleproj(req, res) {
               createdAt: pgProject.createdat,
               updatedAt: pgProject.updatedat,
             };
+
+             
+ if (project.review && Array.isArray(project.review) && project.review.length > 0) {
+          // Use for...of to await each review query
+          for (const revid of project.review) {
+            try {
+              const [review] = await sql`SELECT * FROM reviews WHERE id = ${revid}`;
+              if (review) {
+                const reviewData = {
+                  _id: review.id,
+                  name: review.name,
+                  image: review.image,
+                  email: review.email,
+                  message: review.message,
+                  role: review.role,
+                  website: review.website,
+                  company: review.company,
+                  project_id: review.project_id,
+                  project_name: review.project_name,
+                  project_slug: review.project_slug,
+                  rating: review.rating,
+                  consent: review.consent,
+                  createdAt: review.createdat,
+                  updatedAt: review.updatedat
+                };
+                // Check for metadata mismatch
+                if (review.project_id === project._id && 
+                    (review.project_name !== project.title || review.project_slug !== project.slug)) {
+                  console.warn(
+                    `Review ID ${revid} has mismatched metadata: ` +
+                    `Review project_name="${review.project_name}", project_slug="${review.project_slug}" ` +
+                    `does not match project title="${project.title}", slug="${project.slug}".`
+                  );
+                  // Optionally update review metadata to match project
+                
+                  await sql`
+                    UPDATE reviews SET
+                      project_name = ${project.title},
+                      project_slug = ${project.slug}
+                    WHERE id = ${revid}
+                  `;
+                  reviewData.project_name = project.title;
+                  reviewData.project_slug = project.slug;
+                  
+                }
+                ProjectReviews.push(reviewData);
+              } else {
+                console.log(`Review ID ${revid} not found for project ${queryId}`);
+              }
+            } catch (reviewError) {
+              console.error(`Error fetching review ID ${revid}:`, reviewError);
+            }
+          }
+        }
+        
           }
         } catch (neonError) {
-          console.error('Neon GET single failed:', neonError);
+          console.log('Neon GET single failed:', neonError);
         }
-        if (!project) {
-          project = await Project.findById(queryId); // Mongo fallback if needed
-        }
-        return res.json(project ? { success: true, data: project } : { success: false, message: "Project not found" });
+        console.log("ProjectReviews", ProjectReviews)
+       
+        return res.json(project ? { success: true, data: project, data1: ProjectReviews } : { success: false, message: "Project not found" });
       } else {
         let projects = [];
         try {
           const pgProjects = await sql`SELECT * FROM projects ORDER BY createdat DESC`;
+        
           projects = pgProjects.map(pgProject => ({
             _id: pgProject.id,
             title: pgProject.title,
@@ -130,9 +186,8 @@ export default async function handleproj(req, res) {
             updatedAt: pgProject.updatedat,
           }));
         } catch (neonError) {
-          console.error('Neon GET all failed:', neonError);
-          projects = await Project.find().sort({ createdAt: -1 }); // Mongo fallback
-        }
+          console.log('Neon GET all failed:', neonError);
+         }
         return res.json({ success: true, data: projects });
       }
     } else if (method === 'DELETE') {
@@ -158,10 +213,10 @@ export default async function handleproj(req, res) {
             )`;
           res.json({ success: true, message: "Project deleted Successfully" });
         } catch (neonNotifError) {
-          console.error('Neon notification insert failed:', neonNotifError);
+          console.log('Neon notification insert failed:', neonNotifError);
         }
       } catch (neonError) {
-        console.error('Neon delete failed:', neonError);
+        console.log('Neon delete failed:', neonError);
       }
       // Refetch projects (unchanged)
       let projects = [];
@@ -172,7 +227,7 @@ export default async function handleproj(req, res) {
           // ... (same as above)
         }));
       } catch (neonError) {
-        console.error('Neon GET all after delete failed:', neonError);
+        console.log('Neon GET all after delete failed:', neonError);
       }
       return res.json({ success: true, data: projects });
     }
@@ -223,7 +278,7 @@ export default async function handleproj(req, res) {
             newImageUrls.push(result.secure_url);
             fs.unlinkSync(file.path); // Delete temp local file
           } catch (error) {
-            console.error('Cloudinary upload error:', error);
+            console.log('Cloudinary upload error:', error);
             // Continue, but you can add error handling
           }
         }
@@ -259,7 +314,7 @@ export default async function handleproj(req, res) {
                 CURRENT_TIMESTAMP
               )`;
           } catch (neonNotifError) {
-            console.error('Neon notification insert failed:', neonNotifError);
+            console.log('Neon notification insert failed:', neonNotifError);
           }
           return res.json({ success: true, message: "Project created Successfully" });
         } catch (neonError) {
@@ -304,7 +359,7 @@ export default async function handleproj(req, res) {
                 CURRENT_TIMESTAMP
               )`;
           } catch (neonNotifError) {
-            console.error('Neon notification insert failed:', neonNotifError);
+            console.log('Neon notification insert failed:', neonNotifError);
           }
           return res.json({ success: true, message: "Project updated Successfully" });
         } catch (neonError) {

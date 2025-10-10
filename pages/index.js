@@ -124,7 +124,7 @@ export default function Home() {
         setAllVisitors(combinedData);
         setProjectData(projects);
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.log('Error fetching data:', err);
       }
     };
 

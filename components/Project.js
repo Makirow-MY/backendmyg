@@ -159,7 +159,7 @@ export default function Project({
       setRedirect(true);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error saving project');
-      console.error('Save error:', error);
+      console.log('Save error:', error);
     }
   }
 
@@ -408,11 +408,20 @@ export default function Project({
           </div>
         </div>
         <div className='w-100 mb-2'>
-          <button type='submit' className='w-100 addwebbtn flex-center'>{projectType === "For Sale" ? 'Publish Product' : 'Add to Portfolio'}</button>
+          <button type='submit' className='w-100 addwebbtn flex-center'>
+            {
+             !_id ?  projectType === "For Sale" ? 'Publish Product' : 'Add to Portfolio' : 'Save Changes'
+            }
+           </button>
         </div>
       </form>
       <div className="buttonClass">
-        <a href="/projects" className="button"><FaArrowLeft /> Projects</a>
+        {
+          _id &&  <a href={`/projects/view/${_id}`} className="button"><FaArrowLeft />back to view</a>
+        }
+        {
+          !_id &&  <a href="/projects" className="button"><FaArrowLeft />Back to Projects</a>
+        }
       </div>
     </>
   );

@@ -36,7 +36,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
         updatedAt: pgNotif.updatedat
       }));
     } catch (neonError) {
-      console.error('Neon GET notifications failed:', neonError);
+      console.log('Neon GET notifications failed:', neonError);
     
     }
    
@@ -63,7 +63,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
         updatedAt: pgNotif.updatedat
       }));
     } catch (neonError) {
-      console.error('Neon GET notifications failed:', neonError);
+     console.log('Neon GET notifications failed:', neonError);
     }
     return res.json({
       success: true,

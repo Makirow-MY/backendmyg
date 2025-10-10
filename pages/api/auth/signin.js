@@ -47,7 +47,7 @@ return res.status(200).json({
         });
       }
     } catch (neonError) {
-      console.error('Neon check email failed:', neonError);
+      console.log('Neon check email failed:', neonError);
        return res.status(400).json({
           success: false,
           error: true,

@@ -47,7 +47,7 @@ export default async function handler(req, res) {
           };
         }
       } catch (neonError) {
-        console.error('Neon GET user failed:', neonError);
+        console.log('Neon GET user failed:', neonError);
       }
     
       if (!user) {
@@ -161,7 +161,7 @@ export default async function handler(req, res) {
         };
       }
     } catch (neonError) {
-      console.error('Neon GET user for update failed:', neonError);
+     console.log('Neon GET user for update failed:', neonError);
     }
   
     if (!user) {

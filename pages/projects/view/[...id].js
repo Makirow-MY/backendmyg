@@ -7,18 +7,34 @@ import toast from "react-hot-toast";
 import { FaArrowLeft } from "react-icons/fa";
 import { IoStar, IoStarOutline } from "react-icons/io5";
 import Link from "next/link";
+import Spinner from "@/components/Spinner";
 
 export default function EditVisitors() {
     const router = useRouter();
     const { id } = router.query;
+      const [isloading, setIsLoading] = useState(true);
     const [contactInfo, setContactInfo] = useState(null);
+     const [revInfo, setRevInfo] = useState(null);
+   
     const [loading, setLoading] = useState(true);
     const [cont, setCont] = useState(false);
     const [Prod, setProd] = useState(false);
     const [comm, setComm] = useState(false);
-
+const [currentPage, setCurrentPage] = useState(1);
+const reviewsPerPage = 10;
     const [error, setError] = useState(null);
-
+const formatDate = (date) => {
+  if (!date || isNaN(date)) {
+    return '';
+  }
+  const options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour12: true
+  };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+};
  useEffect(() => {
   toast.dismiss();
     const fetchData = async () => {
@@ -38,9 +54,11 @@ export default function EditVisitors() {
                 setProductInfo(res.data.data );
 
                   const products = res.data?.success ? res.data.data : null;
+                  const reviews = res.data?.success ? res.data.data1 : [];
            
            if (products) {
                 setContactInfo(products);
+                setRevInfo(reviews)
                 setProd(true);
             }
             else {
@@ -54,7 +72,7 @@ export default function EditVisitors() {
         } catch (error) {
             const errorMsg = error.response?.data?.message || error.message;
             toast.error(errorMsg || 'An unexpected error occurred');
-            console.error('Error:', error);
+            console.log('Error:', error);
         } finally {
             setLoading(false);
         }
@@ -68,9 +86,9 @@ export default function EditVisitors() {
 
   for (let i = 1; i <= 5; i++) {
     if (i <= rating) {
-      stars.push(<IoStar />);
+      stars.push(<IoStar size={24} />);
     } else {
-      stars.push(<IoStarOutline />);
+      stars.push(<IoStarOutline size={24} />);
     }
   }
 
@@ -80,10 +98,12 @@ export default function EditVisitors() {
  const [productInfo, setProductInfo] = useState(null);
 
       async function chooseDel(id) {
-         axios.get('/api/projects?id=' + id).then(res => {
+        setDelete(true)
+        setIsLoading(true)
+        await axios.get('/api/projects?id=' + id).then(res => {
              setProductInfo(res.data.data )
            })
-            setDelete(true)
+            setIsLoading(false)
       }
 
             function goBack() {
@@ -100,14 +120,14 @@ export default function EditVisitors() {
             toast.success(res.data.message || "Project deleted successfully");
       goBack();
               }).catch ((error) => {
-    console.error("Delete error:", error);
+    console.log("Delete error:", error);
     setLoading(false);
     toast.error(error.response?.data?.message || "Failed to delete project");
   })
 
   
   } catch (error) {
-    console.error("Delete error:", error);
+    console.log("Delete error:", error);
     setLoading(false);
     toast.error(error.response?.data?.message || "Failed to delete project");
   }
@@ -136,7 +156,7 @@ export default function EditVisitors() {
         <LoginLayout>
            
              <Head>
-                <title>MYG Tech - {contactInfo.title} Projects Details</title>
+                <title>MYG Tech - {contactInfo?.title} Projects Details</title>
                 <meta name="description" content="Blog website backend" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
               </Head>
@@ -156,18 +176,26 @@ export default function EditVisitors() {
       {/* Basic Information Section - Always shown */}
       <p className="pulsing-label">Core Information</p>
       <div className="galaxy-grid">
-        <div className="nebula-bg" style={{width:'250px', height: '200px'}}>
-          <img src={contactInfo.images[0] || `https://ui-avatars.com/api/?name=${contactInfo.name}&background=random`} 
+       <div className="flex flex-col"  style={{width:'250px'}}>
+{contactInfo.images.slice(0,3).map((image, index) => (
+<div className="nebula-bg" key={index} style={{width:'100%', height: '150px'}}>
+          <img src={image} 
                alt={contactInfo.title} 
                className="project-preview-image" />
         </div>
+) ) 
+  }
+
+       </div>
         
         <div className="info-column nebula-bg">
           <p><span className="glowing-label">Project Title:</span> 
              <span className="cosmic-text">{contactInfo.title}</span></p>
           
-          <p><span className="glowing-label">Client:</span> 
+   {
+     contactInfo.client &&  <p><span className="glowing-label">Client:</span> 
              <span className="cosmic-text">{contactInfo.client}</span></p>
+   }       
            
           <p><span className="glowing-label">Category:</span> 
              <span className="cosmic-text">{contactInfo.projectcategory}</span></p>
@@ -178,11 +206,20 @@ export default function EditVisitors() {
           <p><span className="glowing-label">Status:</span> 
              <span className="cosmic-text capitalize">{contactInfo.status}</span></p>
             
-          <p><span className="glowing-label">Price:</span> 
-             <span className="cosmic-text">${contactInfo.price}</span></p>
+          {
+                contactInfo.price != 0 && <p><span className="glowing-label">Price:</span> 
+             <span className="cosmic-text">
+              {
+                contactInfo.price
+              }
+              </span></p>
+          }
+          
             
-          <p><span className="glowing-label">License:</span> 
+        {
+           contactInfo.licenseType && <p><span className="glowing-label">License:</span> 
              <span className="cosmic-text">{contactInfo.licenseType}</span></p>
+        }  
             
           <p><span className="glowing-label">Responsive:</span> 
              <span className="cosmic-text">{contactInfo.isResponsive ? 'Yes' : 'No'}</span></p>
@@ -210,7 +247,14 @@ export default function EditVisitors() {
             <span className="glowing-label">Description:</span><br/>
             {contactInfo.description}
           </p>
-          
+           <div>
+                <span className="glowing-label">Project Tags:</span>
+                <ul className="feature-list">
+                  {contactInfo.tags.map((feature, i) => (
+                    <li key={i} style={{paddingLeft:'20px'}}>*{feature}</li>
+                  ))}
+                </ul>
+              </div>
           <div className="tech-grid">
             {contactInfo.technologies.filter(t => t).length > 0 && (
               <div>
@@ -292,6 +336,106 @@ export default function EditVisitors() {
         </div>
       </div>
 
+     <div className="cosmic-section">
+<p className="pulsing-label">Project Reviews ({revInfo?.length || 0})</p>
+        <div className="cosmic-text-highlight nebula-bg">
+          {revInfo?.length > 0 ? (
+            <>
+              <div className="review-grid" style={{ display: 'grid', gap: '.4rem', marginBottom: '1rem' }}>
+                {revInfo.slice((currentPage - 1) * reviewsPerPage, currentPage * reviewsPerPage).map((review, index) => (
+                  <div key={index} className="review-item nebula-bg" style={{ padding: '1rem ', background:'var(--main-bgcolor)', borderRadius: '5px' }}>
+                    <div className="flex flex-sb">
+                      <div>
+                        <span className="cosmic-text" style={{color: `var(--primary-color)`, fontWeight:500}}>{review.name}</span>
+                     {review.role && (
+                      <p>
+                        <span className="glowing-label">Role:</span>
+                        <span className="cosmic-text">{review.role}</span>
+                      </p>
+                    )}
+                    {review.company && (
+                      <p>
+                        <span className="glowing-label">Company:</span>
+                        <span className="cosmic-text">{review.company}</span>
+                      </p>
+                    )}
+
+                      </div>
+                      <div className="flex">
+                        <p   style={{alignItems:'center'}}>
+                      <span className="cosmic-text" >{StarRating(review.rating.length / 2)}</span>
+                       <span className="cosmic-text text-right w-full">{formatDate(new Date(review.createdAt))}</span>
+                    </p>
+                      {review.image && (
+                        <img
+                          src={review.image}
+                          alt={review.name}
+                          className="reviewer-image"
+                          style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                      )}
+                      </div>
+                    </div>
+                   
+                    <p>
+                      <span className="glowing-label">Message:</span>
+                      <span className="cosmic-text">{review.message}</span>
+                    </p>
+                    
+                    {review.website && (
+                      <p>
+                        <span className="glowing-label">Website:</span>
+                        <a href={review.website} className="cosmic-text link" target="_blank" rel="noopener noreferrer">
+                          {review.website}
+                        </a>
+                      </p>
+                    )}
+                   
+                  </div>
+                ))}
+              </div>
+              {revInfo.length > reviewsPerPage && (
+                <div className="pagination flex flex-sb" style={{ marginTop: '1rem' }}>
+                  <button
+                    className="button"
+                    style={{
+                      background: 'var(--primary-color)',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '5px',
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                    }}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="cosmic-text">
+                    Page {currentPage} of {Math.ceil(revInfo.length / reviewsPerPage)}
+                  </span>
+                  <button
+                    className="button"
+                    style={{
+                      background: 'var(--primary-color)',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '5px',
+                      opacity: currentPage === Math.ceil(revInfo.length / reviewsPerPage) ? 0.5 : 1,
+                      cursor: currentPage === Math.ceil(revInfo.length / reviewsPerPage) ? 'not-allowed' : 'pointer'
+                    }}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(revInfo.length / reviewsPerPage)))}
+                    disabled={currentPage === Math.ceil(revInfo.length / reviewsPerPage)}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="cosmic-text">No reviews available for this project.</p>
+          )}
+        </div>
+      </div>
+
       <div className="stellar-footer"></div>
     </div>
   </>
@@ -310,7 +454,7 @@ export default function EditVisitors() {
             }
 
 {
-    isDelete && (
+    isDelete && !isloading && (
                             <div className="deletesec">
                                 <div className="pot" >
                                     <div className="deletecard">
@@ -326,6 +470,21 @@ export default function EditVisitors() {
                                                    
                                  
                     )
+}
+
+{
+
+                    isDelete && isloading && (
+                            <div className="deletesec">
+                                <div className="pot" >
+                                   <Spinner/>
+                                                   </div>
+                            </div>
+                                                   
+                                 
+                    )
+     
+
 }
  
 
