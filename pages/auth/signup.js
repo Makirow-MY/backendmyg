@@ -122,8 +122,7 @@ window.localStorage.setItem("UserName", data.data.fullname);
 }
   
   return (
-    <>
-    <div className="overflow-hidden ">
+    <div  style={{height: '100vh',width: '100%',  padding: '0px', margin: 0}}>
     <div className="loginform">
       <div className="heading">Sign Up Create Admin</div>
     
@@ -156,7 +155,6 @@ window.localStorage.setItem("UserName", data.data.fullname);
     </div>
     </div>
    
-    </>
   );
 }
 
