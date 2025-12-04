@@ -85,7 +85,7 @@ router.events.off("routeChangeError", handleComplete)
               search={search}
                isOpen={asideOpen} 
                onToggleSidebar={() => setAsideOpen(!asideOpen)} />
-              <Aside isOpen={asideOpen} />
+              <Aside isOpen={asideOpen} setAsideOpen={setAsideOpen} />
         </div>
 
 </SessionProvider>

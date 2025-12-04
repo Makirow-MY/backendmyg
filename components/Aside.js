@@ -13,11 +13,12 @@ import {
   FiFolder,      // Perfect for projects
   FiFileText,    // Ideal for blogs/posts
   FiPackage,     // Best for products
-  FiUsers        // Most clear visitors icon
+  FiUsers,        // Most clear visitors icon
+  FiX
 } from 'react-icons/fi';
 
 
-export default function Aside({ isOpen }) {
+export default function Aside({ isOpen, setAsideOpen }) {
   const { data: session } = useSession();
    const [isTablet, setIsTablet] = useState(window.innerWidth <= 789);
   const router = useRouter();
@@ -48,7 +49,11 @@ useEffect(() => {
         <>
        
       <aside className={`aside ${isOpen ? "open" : ""}`}>
+            <div className="relative">
+               <FiX className={`close-icon`} onClick={() => setAsideOpen(false)} />
+            
              <h1 className="logo " onClick={() => router.push('/')}>MYG Tech</h1>
+       
         <div className="flex">
                     <img className="profile-icon" src={profileImage} alt="profile" />
                 <div className="profile-name">
@@ -59,6 +64,7 @@ useEffect(() => {
                   </span>
                   </div>
                   
+                </div>
                 </div>
         <ul>
           

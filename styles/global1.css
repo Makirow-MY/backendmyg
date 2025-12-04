@@ -370,7 +370,16 @@ p{
 .aside.open {
     transform: translateX(0);
 }
-
+.close-icon{
+   font-size: 1.5rem;
+   position: absolute;
+   right: 0;
+   top: 1rem;
+    cursor: pointer;
+    color: var(--pure-white);
+    z-index: 100000;
+    background: red;
+}
 .aside .flex {
     padding: 1rem;
     padding-top: 0;
