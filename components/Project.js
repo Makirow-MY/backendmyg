@@ -302,25 +302,65 @@ export default function Project({
           </div>
         )}
         <div className='flex gap-2'>
-          <div className='w-100 flex flex-col flex-left mb-2'>
-            <label htmlFor='technologies'>Technologies* <span className='text-sm text-gray-500'>(Comma-separated)</span></label>
-            <input className='input' required value={technologies.join(", ")} onChange={(e) => setTechnologies(e.target.value.split(",").map(t => t.trim()).filter(t => t))} placeholder="e.g., React, Cisco" />
-          </div>
-          <div className='w-100 flex flex-col flex-left mb-2'>
-            <label htmlFor='features'>Features* <span className='text-sm text-gray-500'>(Comma-separated)</span></label>
-            <input className='input' required value={features.join(", ")} onChange={(e) => setFeatures(e.target.value.split(",").map(f => f.trim()).filter(f => f))} placeholder="e.g., Authentication, VFX" />
-          </div>
-        </div>
-        <div className='flex gap-2'>
-          <div className='w-100 flex flex-col flex-left mb-2'>
-            <label htmlFor='platforms'>Platforms* <span className='text-sm text-gray-500'>(Comma-separated)</span></label>
-            <input className='input' required value={platforms.join(", ")} onChange={(e) => setPlatforms(e.target.value.split(",").map(p => p.trim()).filter(p => p))} placeholder="e.g., Web, iOS" />
-          </div>
-          <div className='w-100 flex flex-col flex-left mb-2'>
-            <label htmlFor='projectYear'>Year*</label>
-            <input className='input' required type="number" min="2000" max={new Date().getFullYear()} value={projectYear} onChange={(e) => setProjectYear(Number(e.target.value))} placeholder={new Date().getFullYear().toString()} />
-          </div>
-        </div>
+  <div className='w-100 flex flex-col flex-left mb-2'>
+    <label htmlFor='technologies' className='glowing-label'>Technologies* <span className='text-sm text-gray-500'>(Comma-separated)</span></label>
+    <input
+      className='input shad-input'
+      id='technologies'
+      required
+      value={technologies.join(", ")}
+      onChange={(e) => {
+        const value = e.target.value;
+        setTechnologies(value ? value.split(",").map(t => t.trim()) : []);
+      }}
+      placeholder="e.g., React, Cisco"
+    />
+  </div>
+  <div className='w-100 flex flex-col flex-left mb-2'>
+    <label htmlFor='features' className='glowing-label'>Features* <span className='text-sm text-gray-500'>(Comma-separated)</span></label>
+    <input
+      className='input shad-input'
+      id='features'
+      required
+      value={features.join(", ")}
+      onChange={(e) => {
+        const value = e.target.value;
+        setFeatures(value ? value.split(",").map(f => f.trim()) : []);
+      }}
+      placeholder="e.g., Authentication, VFX"
+    />
+  </div>
+</div>
+<div className='flex gap-2'>
+  <div className='w-100 flex flex-col flex-left mb-2'>
+    <label htmlFor='platforms' className='glowing-label'>Platforms* <span className='text-sm text-gray-500'>(Comma-separated)</span></label>
+    <input
+      className='input shad-input'
+      id='platforms'
+      required
+      value={platforms.join(", ")}
+      onChange={(e) => {
+        const value = e.target.value;
+        setPlatforms(value ? value.split(",").map(p => p.trim()): []);
+      }}
+      placeholder="e.g., Web, iOS"
+    />
+  </div>
+  <div className='w-100 flex flex-col flex-left mb-2'>
+    <label htmlFor='projectYear' className='glowing-label'>Year*</label>
+    <input
+      className='input shad-input'
+      id='projectYear'
+      required
+      type="number"
+      min="2000"
+      max={new Date().getFullYear()}
+      value={projectYear}
+      onChange={(e) => setProjectYear(Number(e.target.value))}
+      placeholder={new Date().getFullYear().toString()}
+    />
+  </div>
+</div>
         <div className='flex gap-2'>
           <div className='w-100 flex flex-col flex-left mb-2'>
             <label htmlFor='livepreview'>Live Demo <span className='text-sm text-gray-500'>(Optional)</span></label>

@@ -71,6 +71,8 @@ export default async function handle(req, res) {
                         parentImage: pgComment.parentimage,
                         updatedAt: pgComment.updatedat
                     }));
+
+                    console.log("pgComments",comments)
                 } catch (neonError) {
                     console.log('Neon GET all commmments failed:', neonError);
                    //omments = await Comment.find().sort({ createdAt: 1 });

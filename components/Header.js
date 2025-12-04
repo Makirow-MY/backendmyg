@@ -73,19 +73,28 @@ catch (error) {
     fetchData();
   }, [router.pathname]);
 
-  useEffect(() => {
+  // useEffect(() => {
     
-    if (dark) {
+  //   if (dark) {
+  //     document.body.classList.add('light');
+  //     localStorage.setItem('darkmode', true);
+  //   } else {
+  //     document.body.classList.remove('light');
+  //     localStorage.setItem('darkmode', false);
+  //   }
+  // }, [dark]);
+
+  const ToggleMode = () => {
+   
+     if (dark) {
       document.body.classList.add('light');
       localStorage.setItem('darkmode', true);
+       setDark(false);
     } else {
       document.body.classList.remove('light');
       localStorage.setItem('darkmode', false);
+       setDark(true);
     }
-  }, [dark]);
-
-  const ToggleMode = () => {
-    setDark(!dark);
   };
 
   return (

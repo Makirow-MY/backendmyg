@@ -22,7 +22,7 @@ export default function Projects() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currP, setCurrP] = useState(1);
-  const [pagePage, setPagePage] = useState(15);
+  const [pagePage, setPagePage] = useState(30);
   const { search, setSearch } = useSearch();
   const [mainFilter, setMainFilter] = useState("all"); // 'all', 'review', 'comment', 'contact'
   const [subjectFilter, setSubjectFilter] = useState("recent"); // 'recent', 'alphabetical', etc.
