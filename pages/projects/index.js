@@ -351,7 +351,7 @@ export default function Projects() {
                        
                         <td style={{textAlign:'center'}}>
                           <img 
-                            src={item.images[0]} 
+                            src={item.images[Math.floor(Math.random() * item?.images?.length)]} 
                             alt={item?.title}
                             style={{width: '120px', height:'100px', borderRadius: '10px'}}
                             className=" rounded-full"

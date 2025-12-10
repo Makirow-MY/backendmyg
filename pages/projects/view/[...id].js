@@ -4,13 +4,24 @@ import { useState, useEffect } from "react";
 import { useRouter } from 'next/router';
 import LoginLayout from "@/components/LoginLayout";
 import toast from "react-hot-toast";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaPlus, FaUserPlus } from "react-icons/fa";
 import { IoStar, IoStarOutline } from "react-icons/io5";
 import Link from "next/link";
 import Spinner from "@/components/Spinner";
 
 export default function EditVisitors() {
     const router = useRouter();
+    const [showAddReview, setShowAddReview] = useState(false);
+const [newReview, setNewReview] = useState({
+  name: '',
+  role: '',
+  company: '',
+  website: '',
+  message: '',
+  rating: 5,
+  image: '' // optional
+});
+const [addingReview, setAddingReview] = useState(false);
     const { id } = router.query;
       const [isloading, setIsLoading] = useState(true);
     const [contactInfo, setContactInfo] = useState(null);
@@ -175,10 +186,10 @@ const formatDate = (date) => {
       
       {/* Basic Information Section - Always shown */}
       <p className="pulsing-label">Core Information</p>
-      <div className="galaxy-grid">
-       <div className="flex flex-col"  style={{width:'250px'}}>
-{contactInfo.images.slice(0,3).map((image, index) => (
-<div className="nebula-bg" key={index} style={{width:'100%', height: '150px'}}>
+      <div className={contactInfo.projectcategory !== "Graphic & UI/UX Design"  ? "galaxy-grid" : "galaxy-grid1"}>
+       <div className={contactInfo.projectcategory !== "Graphic & UI/UX Design" ?"flex flex-col" :  "flex flex-row"}  style={{width: contactInfo.projectcategory !== "Graphic & UI/UX Design" ?'250px' : "100%"}}>
+{contactInfo.images.map((image, index) => (
+<div className="nebula-bg" key={index} style={contactInfo.projectcategory !== "Graphic & UI/UX Design" ? {width:'100%', height: '150px'}: {width:'200px', height: '250px'}}>
           <img src={image} 
                alt={contactInfo.title} 
                className="project-preview-image" />
@@ -188,7 +199,7 @@ const formatDate = (date) => {
 
        </div>
         
-        <div className="info-column nebula-bg">
+        <div className={contactInfo.projectcategory !== "Graphic & UI/UX Design" ? "info-column nebula-bg" : "info-column1 nebula-bg"} style={contactInfo.projectcategory === "Graphic & UI/UX Design" ? {width: '100%'} : {}}>
           <p><span className="glowing-label">Project Title:</span> 
              <span className="cosmic-text">{contactInfo.title}</span></p>
           
@@ -240,7 +251,7 @@ const formatDate = (date) => {
       </div>
 
       {/* Project Details Section */}
-      <div className="cosmic-section">
+     {contactInfo.projectcategory !== "Graphic & UI/UX Design" && <div className="cosmic-section">
         <p className="pulsing-label">Project Specifications</p>
         <div className="cosmic-text-highlight nebula-bg">
           <p className="cosmic-text">
@@ -290,7 +301,7 @@ const formatDate = (date) => {
             )}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Engagement Metadata - Always shown */}
       <div className="cosmic-section">
@@ -337,7 +348,23 @@ const formatDate = (date) => {
       </div>
 
      <div className="cosmic-section">
+      <div className="flex flex-sb align-center mb-1">
 <p className="pulsing-label">Project Reviews ({revInfo?.length || 0})</p>
+       <button
+      onClick={() => setShowAddReview(!showAddReview)}
+      style={{
+        marginLeft: '1rem',
+        padding: '0.5rem 1rem',
+        background: 'var(--main-hover-color)',
+        border: 'none',
+        borderRadius: '5px',
+        color: 'white',
+        fontSize: '14px'
+      }}
+    >
+      <FaPlus size={20} /> add review
+       </button>
+       </div>
         <div className="cosmic-text-highlight nebula-bg">
           {revInfo?.length > 0 ? (
             <>

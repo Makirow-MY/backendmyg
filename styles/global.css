@@ -691,6 +691,17 @@ table img{
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
+.flex-row{
+    flex-wrap: wrap;
+    flex-flow: wrap;
+}
+.galaxy-grid1 {
+    display: flex;
+    flex-direction: column-reverse !important;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
 
 @media (min-width: 768px) {
     .galaxy-grid {
@@ -698,7 +709,7 @@ table img{
     }
 }
 
-.info-column {
+.info-column1 {
     padding: 1.5rem;
     width: 100%;
     border-radius: 10px;

@@ -242,18 +242,18 @@ export default function Project({
         <div className='flex gap-2'>
           <div className='w-100 flex flex-col flex-left mb-2'>
             <label htmlFor='title'>Project Title* <span className='text-sm text-gray-500'>(e.g., E-commerce Website)</span></label>
-            <input className='input' required value={title} onChange={(e) => { handleSlugChange(e); setTitle(e.target.value); }} type='text' id='title' placeholder='Enter project title' />
+            <input className='input' required={ projectcategory !== "Graphic & UI/UX Design" ? true : false} value={title} onChange={(e) => { handleSlugChange(e); setTitle(e.target.value); }} type='text' id='title' placeholder='Enter project title' />
           </div>
           <div className='w-100 flex flex-col flex-left mb-2'>
             <label htmlFor='client'>Client <span className='text-sm text-gray-500'>(Optional)</span></label>
             <input className='input' value={client} onChange={(e) => setClient(e.target.value)} type='text' id='client' placeholder='e.g., CamTech Solutions' />
           </div>
         </div>
-        <input className='input' required value={slug} onChange={handleSlugChange} type='hidden' id='slug' />
+        <input className='input' required={ projectcategory !== "Graphic & UI/UX Design" ? true : false} value={slug} onChange={handleSlugChange} type='hidden' id='slug' />
         <div className='flex gap-2'>
           <div className='w-100 flex flex-col flex-left mb-2'>
             <label htmlFor='category'>Specialization*</label>
-            <select name='category' required id='category' value={projectcategory} onChange={(e) => setProjectcategory(e.target.value)} className='input'>
+            <select name='category' required={ projectcategory !== "Graphic & UI/UX Design" ? true : false} id='category' value={projectcategory} onChange={(e) => setProjectcategory(e.target.value)} className='input'>
               <option value="">Select Category</option>
               {Object.keys(TAGS_BY_CATEGORY).map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
@@ -266,16 +266,17 @@ export default function Project({
             </select>
           </div>
         </div>
+{ projectcategory !== "Graphic & UI/UX Design" && <>
         {projectType === "For Sale" && (
           <>
             <div className='flex gap-2'>
               <div className='w-100 flex flex-col flex-left mb-2'>
                 <label htmlFor='price'>Price (USD)*</label>
-                <input className='input' required value={price} onChange={(e) => setPrice(Number(e.target.value))} type='number' min="0" step="0.01" id='price' placeholder='e.g., 999.99' />
+                <input className='input' required={ projectcategory !== "Graphic & UI/UX Design" ? true : false} value={price} onChange={(e) => setPrice(Number(e.target.value))} type='number' min="0" step="0.01" id='price' placeholder='e.g., 999.99' />
               </div>
               <div className='w-100 flex flex-col flex-left mb-2'>
                 <label htmlFor='licenseType'>License Type*</label>
-                <select className='input' required value={licenseType} onChange={(e) => setLicenseType(e.target.value)}>
+                <select className='input' required={ projectcategory !== "Graphic & UI/UX Design" ? true : false} value={licenseType} onChange={(e) => setLicenseType(e.target.value)}>
                   <option value="">Select License</option>
                   <option value="MIT">MIT</option>
                   <option value="GPL">GPL</option>
@@ -294,7 +295,7 @@ export default function Project({
         )}
         <div className='w-100 flex flex-col flex-left mb-2'>
           <label htmlFor='description'>Description* <span className='text-sm text-gray-500'>(Purpose, challenges, impact)</span></label>
-          <textarea className='w-100 descript' required value={description} rows={6} placeholder='Describe purpose, role, challenges, outcomes (e.g., 20% engagement)' onChange={(e) => setDescription(e.target.value)} />
+          <textarea className='w-100 descript' required={ projectcategory !== "Graphic & UI/UX Design" ? true : false} value={description} rows={6} placeholder='Describe purpose, role, challenges, outcomes (e.g., 20% engagement)' onChange={(e) => setDescription(e.target.value)} />
         </div>
         {projectcategory && CATEGORY_FIELDS[projectcategory] && (
           <div className='w-100 flex flex-col flex-left mb-2'>
@@ -307,7 +308,7 @@ export default function Project({
     <input
       className='input shad-input'
       id='technologies'
-      required
+      required={ projectcategory !== "Graphic & UI/UX Design" ? true : false}
       value={technologies.join(", ")}
       onChange={(e) => {
         const value = e.target.value;
@@ -321,7 +322,7 @@ export default function Project({
     <input
       className='input shad-input'
       id='features'
-      required
+      required={ projectcategory !== "Graphic & UI/UX Design" ? true : false}
       value={features.join(", ")}
       onChange={(e) => {
         const value = e.target.value;
@@ -337,7 +338,7 @@ export default function Project({
     <input
       className='input shad-input'
       id='platforms'
-      required
+      required={ projectcategory !== "Graphic & UI/UX Design" ? true : false}
       value={platforms.join(", ")}
       onChange={(e) => {
         const value = e.target.value;
@@ -351,7 +352,7 @@ export default function Project({
     <input
       className='input shad-input'
       id='projectYear'
-      required
+      required={ projectcategory !== "Graphic & UI/UX Design" ? true : false}
       type="number"
       min="2000"
       max={new Date().getFullYear()}
@@ -391,10 +392,13 @@ export default function Project({
             </label>
           </div>
         )}
+
         <div className='w-100 flex flex-col flex-left mb-2'>
           <label>Paste Image URL <span className='text-sm text-gray-500'>(png, jpg, jpeg, gif)</span></label>
           <input className='input' value={pasteImageUrl} onChange={(e) => setPasteImageUrl(e.target.value)} onPaste={handlePasteImage} onBlur={handlePasteImage} type='text' placeholder='e.g., https://example.com/image.jpg' />
         </div>
+        </>
+        }
         <div className='w-100 flex flex-col flex-left mb-2'>
           <label>Project Visuals* (Maximum 10 images)</label>
           <div className='w-100' style={{ display: 'flex', gap: '1rem', flexShrink: '-1' }}>
