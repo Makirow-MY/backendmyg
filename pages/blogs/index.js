@@ -365,7 +365,7 @@ const router = useRouter()
             </td>
             <td>{formatDate(new Date(item.createdAt))}</td>
              <td >
-                          <a href={`/blogs/edit/${item._id}`} className="text-blue-600 hover:underline mr-1">
+                          <a href={`/blogs/view/${item._id}`} className="text-blue-600 hover:underline mr-1">
                             Edit
                           </a>
                           <button className="p-2 buttonBTN" onClick={() => chooseDel(item._id)}><IoClose /></button>

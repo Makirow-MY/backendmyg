@@ -5,21 +5,25 @@ import { useRouter } from 'next/router';
 import LoginLayout from "@/components/LoginLayout";
 import toast from "react-hot-toast";
 import { FaArrowLeft, FaPlus, FaUserPlus } from "react-icons/fa";
-import { IoStar, IoStarOutline } from "react-icons/io5";
+import { IoExit, IoStar, IoStarOutline } from "react-icons/io5";
 import Link from "next/link";
 import Spinner from "@/components/Spinner";
+import { faker } from "@faker-js/faker";
+import { FiX } from "react-icons/fi";
 
 export default function EditVisitors() {
     const router = useRouter();
+     const randomNum = Math.floor(Math.random() * 100) + 1;
+        const gender = randomNum % 2 === 0 ? 'female' : 'male';
+        const imageNumber = Math.floor(Math.random() * 100);
+
     const [showAddReview, setShowAddReview] = useState(false);
 const [newReview, setNewReview] = useState({
-  name: '',
-  role: '',
-  company: '',
-  website: '',
+  name: faker.person.fullName(),
+  role: faker.name.jobTitle(),
   message: '',
-  rating: 5,
-  image: '' // optional
+  rating: "⭐⭐⭐⭐⭐",
+  image: `https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/${gender}/512/${imageNumber}.jpg`// optional
 });
 const [addingReview, setAddingReview] = useState(false);
     const { id } = router.query;
@@ -32,7 +36,7 @@ const [addingReview, setAddingReview] = useState(false);
     const [Prod, setProd] = useState(false);
     const [comm, setComm] = useState(false);
 const [currentPage, setCurrentPage] = useState(1);
-const reviewsPerPage = 10;
+const reviewsPerPage = 5;
     const [error, setError] = useState(null);
 const formatDate = (date) => {
   if (!date || isNaN(date)) {
@@ -105,9 +109,63 @@ const formatDate = (date) => {
 
   return <div className="starRating rate " style={{fontSize:'35px'}}>{stars}</div>;
 };
+
   const [isDelete, setDelete] = useState(false);
  const [productInfo, setProductInfo] = useState(null);
 
+ const handleAddManualReview = async (e) => {
+  e.preventDefault();
+  if (!newReview.name || !newReview.message) {
+    toast.error("Name and message are required");
+    return;
+  }
+
+  setAddingReview(true);
+  try {
+    const res = await axios.post('/api/reviews', {
+      projectId: contactInfo._id,
+      projectTitle: contactInfo.title,
+      projectSlug: contactInfo.slug,
+      ...newReview,
+      image: newReview.image || `https://ui-avatars.com/api/?name=${newReview.name}&background=random`
+    });
+
+    if (res.data.success) {
+      // Refresh reviews
+      const updated = await axios.get('/api/projects?projId=' + id);
+      setRevInfo(updated.data.data1);
+       await  axios.get('/api/projects?projId=' + id).then(res => {
+               console.log("id", id, "res", res.data.data);
+                setProductInfo(res.data.data );
+
+                  const products = res.data?.success ? res.data.data : null;
+                  const reviews = res.data?.success ? res.data.data1 : [];
+           
+           if (products && reviews) {
+                setRevInfo(reviews)
+                setNewReview({ name: '', role: '', company: '', website: '', message: '', rating: 5, image: '' });
+                 setShowAddReview(false);
+                  toast.success("Review added successfully!");
+            }
+            else {
+               setNewReview({ name: '', role: '', company: '', website: '', message: '', rating: 5, image: '' });
+                setShowAddReview(false);
+                toast.error(`No data found for the provided ID${contactId}  ${id}`);
+            }
+
+              })
+
+     
+     
+    }
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Failed to add review");
+  } finally {
+    {
+    setAddingReview(false);
+  }
+}
+};
       async function chooseDel(id) {
         setDelete(true)
         setIsLoading(true)
@@ -188,7 +246,15 @@ const formatDate = (date) => {
       <p className="pulsing-label">Core Information</p>
       <div className={contactInfo.projectcategory !== "Graphic & UI/UX Design"  ? "galaxy-grid" : "galaxy-grid1"}>
        <div className={contactInfo.projectcategory !== "Graphic & UI/UX Design" ?"flex flex-col" :  "flex flex-row"}  style={{width: contactInfo.projectcategory !== "Graphic & UI/UX Design" ?'250px' : "100%"}}>
-{contactInfo.images.map((image, index) => (
+{ contactInfo.projectcategory !== "Graphic & UI/UX Design" && contactInfo.images.slice(0,4).map((image, index) => (
+<div className="nebula-bg" key={index} style={contactInfo.projectcategory !== "Graphic & UI/UX Design" ? {width:'100%', height: '150px'}: {width:'200px', height: '250px'}}>
+          <img src={image} 
+               alt={contactInfo.title} 
+               className="project-preview-image" />
+        </div>
+) ) 
+  }
+  { contactInfo.projectcategory === "Graphic & UI/UX Design" && contactInfo.images.map((image, index) => (
 <div className="nebula-bg" key={index} style={contactInfo.projectcategory !== "Graphic & UI/UX Design" ? {width:'100%', height: '150px'}: {width:'200px', height: '250px'}}>
           <img src={image} 
                alt={contactInfo.title} 
@@ -368,7 +434,7 @@ const formatDate = (date) => {
         <div className="cosmic-text-highlight nebula-bg">
           {revInfo?.length > 0 ? (
             <>
-              <div className="review-grid" style={{ display: 'grid', gap: '.4rem', marginBottom: '1rem' }}>
+              <div className="review-grid" style={{ display: 'flex', gap: '.4rem', marginBottom: '1rem' }}>
                 {revInfo.slice((currentPage - 1) * reviewsPerPage, currentPage * reviewsPerPage).map((review, index) => (
                   <div key={index} className="review-item nebula-bg" style={{ padding: '1rem ', background:'var(--main-bgcolor)', borderRadius: '5px' }}>
                     <div className="flex flex-sb">
@@ -376,17 +442,11 @@ const formatDate = (date) => {
                         <span className="cosmic-text" style={{color: `var(--primary-color)`, fontWeight:500}}>{review.name}</span>
                      {review.role && (
                       <p>
-                        <span className="glowing-label">Role:</span>
+                        <span className="glowing-label">Occupation:</span>
                         <span className="cosmic-text">{review.role}</span>
                       </p>
                     )}
-                    {review.company && (
-                      <p>
-                        <span className="glowing-label">Company:</span>
-                        <span className="cosmic-text">{review.company}</span>
-                      </p>
-                    )}
-
+                
                       </div>
                       <div className="flex">
                         <p   style={{alignItems:'center'}}>
@@ -409,14 +469,10 @@ const formatDate = (date) => {
                       <span className="cosmic-text">{review.message}</span>
                     </p>
                     
-                    {review.website && (
-                      <p>
-                        <span className="glowing-label">Website:</span>
-                        <a href={review.website} className="cosmic-text link" target="_blank" rel="noopener noreferrer">
-                          {review.website}
-                        </a>
-                      </p>
-                    )}
+                      <button className="button">
+                       Delete
+                      </ button>
+                   
                    
                   </div>
                 ))}
@@ -460,6 +516,89 @@ const formatDate = (date) => {
           ) : (
             <p className="cosmic-text">No reviews available for this project.</p>
           )}
+       
+       {showAddReview  && (
+      <div style={{ padding: '1.5rem', display:'flex', alignItems:'center', justifyContent:'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginTop: '2rem', position: 'fixed', top:'50%', left:'50%', transform:'translate(-50%, -50%)', width:'100%', zIndex:10000000000 }}>
+        <form className="addWebsiteform" 
+        style={{  width:'60%',}}  >
+        <div className="flex flex-sb">
+            <h3 style={{ margin: '0 0 1rem', color: 'var(--primary-color)' }}>Add Review</h3>
+      <IoExit onClick={(e) => {
+        e.preventDefault()
+        setAddingReview(false)}} size={18} style={{padding:'1rem', background:'red', color:'white'}}/>
+    
+        </div>
+              <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+            <input
+              type="text"
+              placeholder="Customer Name *"
+              value={newReview.name}
+              onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
+              required
+              style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }}
+            />
+            <input
+              type="text"
+              placeholder="Role (e.g. CEO)"
+              value={newReview.role}
+              onChange={(e) => setNewReview({ ...newReview, role: e.target.value })}
+              style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }}
+            />
+          
+            <input
+              type="url"
+              placeholder="Image URL (optional)"
+              value={newReview.image}
+              onChange={(e) => setNewReview({ ...newReview, image: e.target.value })}
+              style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }}
+            />
+            <div>
+              <select
+                  id="rating"
+                  name="rating"
+                  value={newReview.rating}
+                  required
+                  defaultValue={"⭐⭐⭐⭐⭐"}
+                  style={{ color: !newReview.rating ? 'rgba(255,255,255, 0.4)' : '#fff', padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', width: '100%' }}
+                   onChange={(e) => setNewReview({...newReview, rating: e.target.value})}
+                >
+                  <option value="">Rating</option>
+                  {["⭐⭐⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐", "⭐⭐", "⭐"].map(r => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              
+            </div>
+          </div>
+          <textarea
+            placeholder="Review message *"
+            rows="2"
+            className='w-100 descript'
+            value={newReview.message}
+            onChange={(e) => setNewReview({ ...newReview, message: e.target.value })}
+            required
+            style={{ height: '100px', width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '5px', border: '1px solid #444' }}
+          />
+          <div style={{ marginTop: '1rem' }}>
+            <button
+              type="submit"
+              disabled={addingReview}
+              onClick={handleAddManualReview}
+              style={{
+                padding: '0.75rem 2rem',
+                background: 'var(--main-hover-color)',
+                border: 'none',
+                borderRadius: '5px',
+                color: 'white'
+              }}
+            >
+              {addingReview ? 'Adding...' : 'Submit Review'}
+            </button>
+          </div>
+        </form>
+      </div>
+    )}
+
         </div>
       </div>
 

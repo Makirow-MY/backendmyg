@@ -967,9 +967,9 @@ select{
     background: red !important;
 }
 .descript{
-    background: var(--sec-bgcolor);
+    background: var(--sec-bgcolor) !important;
     width: 100% !important;
-    height: 250px !important;
+    height: 250px;
     border-radius: 10px;
     padding: 1rem 1rem;
     font-size: 18px;

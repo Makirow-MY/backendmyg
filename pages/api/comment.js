@@ -133,8 +133,57 @@ export default async function handle(req, res) {
            console.log("Error fetching comments:", error);
             return res.status(500).json({ success: false, message: "Failed to fetch comments" });
         }
+    } else if (method === 'DELETE') {
+
+        const id = req.query?.id;
+         if (!id) {
+            return res.status(400).json({ success: false, message: "Comment ID is required" });
+        }
+
+        try {
+            // Fetch the comment to determine if it's main or reply
+            let comment = null;
+            const pgComments = await sql`SELECT * FROM comments WHERE id = ${id}`;
+            if (pgComments.length > 0) {
+                const pgComment = pgComments[0];
+                comment = {
+                    _id: pgComment.id,
+                    mainComment: pgComment.maincomment,
+                    parent: pgComment.parent,
+                    children: pgComment.children
+                };
+            }
+
+            if (!comment) {
+                return res.status(404).json({ success: false, message: "Comment not found" });
+            }
+
+            if (comment.mainComment) {
+                // Delete all child replies
+                await sql`DELETE FROM comments WHERE parent = ${id}`;
+                // Delete the main comment
+                await sql`DELETE FROM comments WHERE id = ${id}`;
+            } else {
+                // Delete the reply
+                await sql`DELETE FROM comments WHERE id = ${id}`;
+                // Remove the reply ID from parent's children array (assuming children is text[])
+                if (comment.parent) {
+                    await sql`
+                    UPDATE comments 
+                    SET children = children - ${id}::text 
+                    WHERE id = ${comment.parent}
+                      AND children ? ${id}
+                `;
+                }
+            }
+
+            return res.status(200).json({ success: true, message: "Comment deleted successfully" });
+        } catch (error) {
+            console.log("Error deleting comment:", error);
+            return res.status(500).json({ success: false, message: "Failed to delete comment" });
+        }
     } else {
-        res.setHeader('Allow', ['GET']); // Only GET is supported
+        res.setHeader('Allow', ['GET', 'DELETE', 'POST']);
         res.status(405).end(`Method ${method} is not allowed`);
     }
 }

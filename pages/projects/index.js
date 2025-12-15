@@ -63,7 +63,7 @@ export default function Projects() {
         
         const projectsRes = await axios.get('/api/projects');
         const projects = projectsRes.data.data;
-
+;
         // Fetch review details for each project
         const projectsWithReviews = await Promise.all(
           projects.map(async (project) => {
@@ -82,7 +82,7 @@ export default function Projects() {
         setOriginalData({
           reviews: projectsWithReviews,
         });
-
+console.log("Projects fetched:", projects, projectsWithReviews)
         projectsWithReviews.sort((a, b) => b.createdAt - a.createdAt);
         setAllData(projectsWithReviews);
         setLoading(false);
@@ -97,23 +97,24 @@ export default function Projects() {
     fetchData();
     toast.dismiss();
   }, []);
-     useEffect(() => {
-            const filterData = () => {
-       let filtered = [...allData];
-    console.log("filtered", filtered);
-    if (search.trim().toLowerCase() !== '') {
-      filtered = filtered.filter(item => 
-        item?.title.toLowerCase().includes(search.toLowerCase()) || 
-        item.client.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-        }
-        filterData();
-      },[search])
+    //  useEffect(() => {
+    //         const filterData = () => {
+    //    let filtered = [...allData];
+    // console.log("filtered", filtered);
+    // if (search.trim().toLowerCase() !== '') {
+    //   filtered = filtered.filter(item => 
+    //     item?.title.toLowerCase().includes(search.toLowerCase()) || 
+    //     item.client.toLowerCase().includes(search.toLowerCase())
+    //   );
+    // }
+    //     }
+    //     filterData();
+    //   },[search])
   const filterData = () => {
     let filtered = [...allData];
-    console.log("filtered", filtered);
     if (search.trim().toLowerCase() !== '') {
+      console.log("filtered", filtered);
+   
       filtered = filtered.filter(item => 
         item?.title.toLowerCase().includes(search.toLowerCase()) || 
         item.client.toLowerCase().includes(search.toLowerCase())

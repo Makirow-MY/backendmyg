@@ -162,6 +162,7 @@ export default async function handle(req, res) {
     if (req.query?.id || req.query?.blogId) {
       const queryId = req.query.id || req.query.blogId;
       let blog = null;
+        let Blogcommentss = []; 
       try {
         const pgBlogs = await sql`SELECT * FROM blogs WHERE id = ${queryId}`;
         if (pgBlogs.length > 0) {
@@ -179,15 +180,67 @@ export default async function handle(req, res) {
             createdAt: pgBlog.createdat,
             updatedAt: pgBlog.updatedat
           };
+
+           if (blog && blog.comments && Array.isArray(blog.comments) && blog.comments.length > 0) {
+          // Use for...of to await each comments query
+          for (const revid of blog.comments) {
+            try {
+              const [comments] = await sql`SELECT * FROM comments WHERE id = ${revid}`;
+              if (comments) {
+                const commentsData = {
+                  _id: comments.id,
+                  name: comments.name,
+                  image: comments.image,
+                  email: comments.email,
+                  message: comments.contentpera,
+                  mainComment: comments.maincomment,
+                  Blog_id: comments.blog,
+                  parentimage: comments.parentimage,
+                  Blog_name: comments.blogtitle,
+                  children: comments.children,
+                  parent: comments.parent,
+                  parentname: comments.parentname,
+                   createdAt: comments.createdat,
+                  updatedAt: comments.updatedat
+                };
+                // Check for metadata mismatch
+                if (comments.blog === blog._id && comments.blogtitle !== blog.title) {
+                  console.warn(
+                    `comments ID ${revid} has mismatched metadata: ` +
+                    `comments Blog_name="${comments.blogtitle}" ` +
+                    `does not match Blog title="${blog.title}", slug="${blog.slug}".`
+                  );
+                  // Optionally update comments metadata to match Blog
+                
+                  await sql`
+                    UPDATE comments SET
+                      blogtitle = ${blog.title},
+                      WHERE id = ${revid}
+                  `;
+                  commentsData.Blog_name = blog.title;
+                   
+                }
+                Blogcommentss.push(commentsData);
+              } else {
+                console.log(`comments ID ${revid} not found for Blog ${queryId}`);
+              }
+            } catch (commentsError) {
+              console.error(`Error fetching comments ID ${revid}:`, commentsError);
+            }
+          }
+        }
+
         }
       } catch (neonError) {
         console.log('Neon GET single failed:', neonError);
       }
-      return res.json(blog ? { success: true, data: blog } : { success: false, message: "Blog not found" });
+
+      console.log("Blogcommentss:", Blogcommentss);
+      return res.json(blog ? { success: true, data: blog, data1:Blogcommentss } : { success: false, message: "Blog not found" });
     } else {
       let blogs = [];
       try {
-        const pgBlogs = await sql`SELECT * FROM blogs ORDER BY createdat DESC`;
+        const pgBlogs = await sql `SELECT * FROM blogs ORDER BY createdat DESC`;
         blogs = pgBlogs.map(pgBlog => ({
           _id: pgBlog.id,
           title: pgBlog.title,
@@ -207,12 +260,42 @@ export default async function handle(req, res) {
       return res.json({ success: true, data: blogs });
     }
   } else if (method === "DELETE") {
+     let blog = null;
+        let Blogcommentss = []; 
     const queryId = req.query?.id || req.query?.blogId;
     if (!queryId) {
       return res.status(400).json({ success: false, message: "Blog ID is required" });
     }
     try {
+        const blogf = await sql`SELECT images FROM blogs WHERE id = ${queryId}`; // If you want to add
+              for (const img of blogf[0].images) {
+                const publicId = img.split('/').pop().split('.')[0]; // Parse public_id
+                await cloudinary.v2.uploader.destroy(`myportfolio/${publicId}`);
+              }
+
+       const pgBlogs = await sql`SELECT * FROM blogs WHERE id = ${queryId}`;
+       
+        if (pgBlogs.length > 0) {
+          const pgBlog = pgBlogs[0];
+        const  Myblog = {
+            comments: pgBlog.comments,
+           };
+
+           if (Myblog && Myblog.comments && Array.isArray(Myblog.comments) && Myblog.comments.length > 0) {
+          // Use for...of to await each comments query
+          for (const revid of Myblog.comments) {
+            try {
+             await sql`DELETE FROM comments WHERE id = ${revid}`;
+             
+            } catch (commentsError) {
+              console.error(`Error deleting comments ID ${revid}:`, commentsError);
+            }
+          }
+        }
+
+        }
       await sql`DELETE FROM blogs WHERE id = ${queryId}`;
+
       try {
         await sql`
           INSERT INTO notifications (
@@ -899,9 +982,9 @@ export default async function handle(req, res) {
 // //         try {
            
                      
-// //          const chooseProject = await Blog.findById(blogId);
+// //          const chooseBlog = await Blog.findById(blogId);
        
-// //                 chooseProject.images.forEach((imageUrl) => {
+// //                 chooseBlog.images.forEach((imageUrl) => {
 // //                           try {
                                    
                                                
@@ -941,10 +1024,10 @@ export default async function handle(req, res) {
        
 // //                     await Blog.deleteOne({ _id: blogId });
            
-// //            // Return remaining projects (sorted by createdAt)
+// //            // Return remaining Blogs (sorted by createdAt)
 // //            const remainingBlog = await Blog.find().sort({ createdAt: -1 });
            
-// //            return res.json(remainingProjects);
+// //            return res.json(remainingBlogs);
                   
 
        
@@ -1059,13 +1142,13 @@ export default async function handle(req, res) {
 // //             if (!blogId) {
 // //                 return res.status(400).json({ 
 // //                   success: false, 
-// //                   message: "Project ID is required" 
+// //                   message: "Blog ID is required" 
 // //                 });
 // //               }
 // //                   if (blogId) {
-// //             const chooseProject = await Blog.findById(blogId);
-// //               if (chooseProject.images.length > 0) {
-// //                     chooseProject.images.forEach((imageUrl) => {
+// //             const chooseBlog = await Blog.findById(blogId);
+// //               if (chooseBlog.images.length > 0) {
+// //                     chooseBlog.images.forEach((imageUrl) => {
 // //                              try {
                                       
                                                   
@@ -1088,8 +1171,8 @@ export default async function handle(req, res) {
 // //                                       }
                           
 // //                                       if (!backendDeleted && !frontendDeleted) {
-// //                                           chooseProject.images = [];
-// //                                          chooseProject.save();
+// //                                           chooseBlog.images = [];
+// //                                          chooseBlog.save();
                                                 
 // //                                         console.log('File not found in either location');
 // //                                           return res.json({
@@ -1114,12 +1197,12 @@ export default async function handle(req, res) {
           
 // //                        await Blog.deleteOne({ _id: blogId });
               
-// //               // Return remaining projects (sorted by createdAt)
-// //               const remainingProjects = await Blog.find().sort({ createdAt: -1 });
+// //               // Return remaining Blogs (sorted by createdAt)
+// //               const remainingBlogs = await Blog.find().sort({ createdAt: -1 });
               
 // //               return res.json({ 
 // //                 success: true,
-// //                 data: remainingProjects 
+// //                 data: remainingBlogs 
 // //               });
                      
 // //                     } else {

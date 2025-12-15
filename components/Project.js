@@ -7,6 +7,7 @@ import { IoTrash } from 'react-icons/io5';
 import { FaArrowLeft } from 'react-icons/fa';
 import { FiUpload } from 'react-icons/fi';
 import Spinner from './Spinner'; // Assuming this exists
+import { faker } from '@faker-js/faker';
 
 const TAGS_BY_CATEGORY = {
   "Graphic & UI/UX Design": ["Wireframing", "Prototyping", "Figma", "Adobe XD", "Photoshop", "Usability Testing", "Design Systems", "Accessibility"],
@@ -58,7 +59,7 @@ export default function Project({
   const [title, setTitle] = useState(existingTitle || "");
   const [slug, setSlug] = useState(existingSlug || "");
   const [livepreview, setLivepreview] = useState(existingLivePreview || "");
-  const [client, setClient] = useState(existingClient || "");
+  const [client, setClient] = useState(existingClient || faker.company.name());
   const [description, setDescription] = useState(existingDesc || "");
   const [price, setPrice] = useState(existingPrice || 0);
   const [projectcategory, setProjectcategory] = useState(existingCat || "");

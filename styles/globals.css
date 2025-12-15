@@ -650,7 +650,7 @@ button {
     box-shadow: 0 0 10px #d1d1d1;
 }
 
-.addWebsiteform .input {
+.addWebsiteform .input{
     width: 100%;
     font-size: 1.4rem;
     padding: 0.75rem;
@@ -671,7 +671,7 @@ button {
     font-weight: 700;
 }
 
-.addWebsiteform select {
+.addWebsiteform select, .addWebsiteform textarea {
     width: 100%;
     font-size: 1.4rem;
     padding: 0.5rem 1rem;

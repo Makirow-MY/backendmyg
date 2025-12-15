@@ -51,9 +51,9 @@ const upload = multer({
 export const config = { api: { bodyParser: false } };
 
 export default async function handleproj(req, res) {
-  const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use env if needed
   const { method } = req;
-
+const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use env if needed
+ 
   if (method === 'GET' || method === 'DELETE') {
     // Handle GET and DELETE without Multer (no body expected)
     if (method === 'GET') {
@@ -158,7 +158,6 @@ export default async function handleproj(req, res) {
         let projects = [];
         try {
           const pgProjects = await sql`SELECT * FROM projects ORDER BY createdat DESC`;
-        
           projects = pgProjects.map(pgProject => ({
             _id: pgProject.id,
             title: pgProject.title,
@@ -188,6 +187,8 @@ export default async function handleproj(req, res) {
         } catch (neonError) {
           console.log('Neon GET all failed:', neonError);
          }
+          console.log("PG Projects:", projects);
+       
         return res.json({ success: true, data: projects });
       }
     } else if (method === 'DELETE') {
@@ -195,13 +196,36 @@ export default async function handleproj(req, res) {
       const { projectId } = req.query;
       if (!projectId) return res.status(400).json({ success: false, message: "Project ID required" });
       try {
-        await sql`DELETE FROM projects WHERE id = ${projectId}`;
         // Optional: Fetch and delete images from Cloudinary
-        // const project = await sql`SELECT images FROM projects WHERE id = ${projectId}`; // If you want to add
-        // for (const img of project[0].images) {
-        //   const publicId = img.split('/').pop().split('.')[0]; // Parse public_id
-        //   await cloudinary.v2.uploader.destroy(`myportfolio/${publicId}`);
-        // }
+        const project = await sql`SELECT images FROM projects WHERE id = ${projectId}`; // If you want to add
+        for (const img of project[0].images) {
+          const publicId = img.split('/').pop().split('.')[0]; // Parse public_id
+          await cloudinary.v2.uploader.destroy(`myportfolio/${publicId}`);
+        }
+
+         const pgprojects = await sql`SELECT * FROM projects WHERE id = ${projectId}`;
+        if (pgprojects.length > 0) {
+          const pgproject = pgprojects[0];
+         const  RevProject = {
+            review: pgproject.review,
+           };
+
+           if (RevProject && RevProject.review && Array.isArray(RevProject.review) && RevProject.review.length > 0) {
+          // Use for...of to await each review query
+          for (const revid of project.review) {
+            try {
+             await sql`DELETE FROM reviews WHERE id = ${revid}`;
+             
+            } catch (reviewError) {
+              console.error(`Error deleting review ID ${revid}:`, reviewError);
+            }
+          }
+        }
+
+        }
+        
+         await sql`DELETE FROM projects WHERE id = ${projectId}`;
+       
         try {
           await sql`
             INSERT INTO notifications (
@@ -223,8 +247,31 @@ export default async function handleproj(req, res) {
       try {
         const pgProjects = await sql`SELECT * FROM projects ORDER BY createdat DESC`;
         projects = pgProjects.map(pgProject => ({
-          _id: pgProject.id,
-          // ... (same as above)
+               _id: pgProject.id,
+              title: pgProject.title,
+              slug: pgProject.slug,
+              images: pgProject.images,
+              client: pgProject.client,
+              description: pgProject.description,
+              projectcategory: pgProject.projectcategory,
+              tags: pgProject.tags,
+              livepreview: pgProject.livepreview,
+              status: pgProject.status,
+              price: pgProject.price,
+              review: pgProject.review,
+              projectType: pgProject.projecttype,
+              technologies: pgProject.technologies,
+              features: pgProject.features,
+              platforms: pgProject.platforms,
+              projectYear: pgProject.projectyear,
+              repositoryUrl: pgProject.repositoryurl,
+              documentationUrl: pgProject.documentationurl,
+              isResponsive: pgProject.isresponsive,
+              licenseType: pgProject.licensetype,
+              supportAvailable: pgProject.supportavailable,
+              createdAt: pgProject.createdat,
+              updatedAt: pgProject.updatedat,
+        
         }));
       } catch (neonError) {
         console.log('Neon GET all after delete failed:', neonError);
@@ -287,7 +334,7 @@ export default async function handleproj(req, res) {
       const images = [...existingImages, ...newImageUrls];
       const calcPrice = projectType === 'Showcase' ? 0 : price;
       const calcLicenseType = projectType === 'Showcase' ? '' : licenseType;
-      const status = (title && slug && description && projectcategory && images.length > 0) ? 'publish' : 'draft';
+      const status = (title && slug && description && projectcategory && projectcategory !== "Graphic & UI/UX Design" && images.length > 0) ? 'publish' : projectcategory && projectcategory === "Graphic & UI/UX Design" ? 'publish' : 'draft';
 
       if (method === 'POST') {
         const id = uuidv4();
