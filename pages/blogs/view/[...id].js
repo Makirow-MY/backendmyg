@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from 'next/router';
 import LoginLayout from "@/components/LoginLayout";
 import toast from "react-hot-toast";
-import { FaArrowLeft, FaPlus } from "react-icons/fa";
+import { FaArrowLeft, FaPlus, FaReply } from "react-icons/fa";
 import Link from "next/link";
 import Spinner from "@/components/Spinner";
 import { faker } from "@faker-js/faker";
 
 export default function EditVisitors() {
   const router = useRouter();
+  const [reply, setReply] = useState(null);
   const randomNum = Math.floor(Math.random() * 100) + 1;
   const gender = randomNum % 2 === 0 ? 'female' : 'male';
   const imageNumber = Math.floor(Math.random() * 100);
@@ -19,8 +20,10 @@ export default function EditVisitors() {
   const [newComment, setNewComment] = useState({
     name: faker.person.fullName(),
     role: faker.name.jobTitle(),
+    email: faker.internet.email(),
+    title: '',
     message: '',
-    rating: "⭐⭐⭐⭐⭐",
+    rating: "makiayengue@gmail.com",
     image: `https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/${gender}/512/${imageNumber}.jpg`
   });
   const [addingComment, setAddingComment] = useState(false);
@@ -123,22 +126,29 @@ export default function EditVisitors() {
     }
     setAddingComment(true);
     try {
-      await axios.post('/api/Comments', {
-        BlogId: contactInfo?._id,
-        BlogTitle: contactInfo?.title,
-        BlogSlug: contactInfo?.slug,
-        ...newComment,
-        image: newComment.image || `https://ui-avatars.com/api/?name=${newComment.name}&background=random`,
-        mainComment: true
-      });
+      await axios.post('/api/comment', {
+        slug: contactInfo?.slug,
+        image: newComment.image || `https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/${gender}/512/${Math.floor(Math.random() * 100)}.jpg`,
+        mainComment: true,
+        contentPera: newComment.message,
+        name: newComment.name,
+        title: newComment.title, 
+        email: "makiayengue@gmail.com",
+        mainComment: reply?._id ? false : true,
+        parent: reply?._id ? reply._id : null,
+       });
       await refreshComments();
       setNewComment({
         ...newComment,
         name: faker.person.fullName(),
+        email: faker.internet.email(),
+        role: faker.name.jobTitle(),
+        title: '',
         message: '',
         image: `https://cdn.jsdelivr.net/gh/faker-js/assets-person-portrait/${gender}/512/${Math.floor(Math.random() * 100)}.jpg`
       });
       setShowAddComment(false);
+      setReply(null)
       toast.success("Comment added successfully!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to add comment");
@@ -405,26 +415,47 @@ export default function EditVisitors() {
                         <p className="cosmic-text" style={{ margin: '1rem 0',}}>
                           {comment.message}
                         </p>
+                        <div className="flex flex-sb align-center">
 <span className="glowing-label">
                               {formatDate(comment.createdAt)}
                             </span>
                         {/* Replies Section */}
+                         <button
+                         onClick={() => {
+                          setReply(comment);
+                          setShowAddComment(true);
+                         }}
+                              style={{
+                                background: 'var(--main-hover-color)',
+                                border: '1px solid var(--main-hover-color)',
+                                color: 'var(--pure-white)',
+                                padding: '0.4rem 0.8rem',
+                                borderRadius: '5px',
+                                fontSize: '0.85rem',
+                                marginLeft: 'auto'
+                              }}
+                            >
+                            add  Reply
+                            </button>
+</div>
                         {comment.children.length > 0 && (
                           <div style={{ marginLeft: '60px', marginTop: '1rem' }}>
                             <button
                               onClick={() => toggleReplies(comment._id)}
                               style={{
-                                background: 'transparent',
+                                background: 'var(--primary-color)',
                                 border: '1px solid var(--primary-color)',
-                                color: 'var(--primary-color)',
+                                color: 'var(--pure-white)',
                                 padding: '0.4rem 0.8rem',
                                 borderRadius: '5px',
                                 fontSize: '0.85rem'
                               }}
                             >
-                              {expandedReplies[comment._id] ? '↑ Hide Replies' : `↓ View Replies (${comment.children.length})`}
+                              
+                              {expandedReplies[comment._id] ? '↑ Hide Replies' : <> <FaReply /> Replies ({comment.children.length}) </>}
                             </button>
 
+                          
                             {expandedReplies[comment._id] && (
                               <div style={{ marginTop: '1rem' }}>
                                 {comment.children
@@ -531,12 +562,12 @@ export default function EditVisitors() {
                   onSubmit={handleAddManualComment}
                   style={{ width: '90%', maxWidth: '600px', background: 'var(--main-bgcolor)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--primary-color)' }}
                 >
-                  <h3 style={{ color: 'var(--primary-color)', marginBottom: '1.5rem' }}>Add New Comment</h3>
+                  <h3 style={{ color: 'var(--primary-color)', marginBottom: '1.5rem', textTransform: 'capitalize' }}>{reply ? `Reply To ${reply.name} Comment` : 'Add New Comment'}</h3>
                   <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
-                    <input type="text" placeholder="Name *" value={newComment.name} onChange={e => setNewComment({ ...newComment, name: e.target.value })} required style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }} />
-                    <input type="text" placeholder="Role" value={newComment.role} onChange={e => setNewComment({ ...newComment, role: e.target.value })} style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }} />
-                    <input type="url" placeholder="Image URL" value={newComment.image} onChange={e => setNewComment({ ...newComment, image: e.target.value })} style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }} />
-                    <input type="text" placeholder="Rating" value={newComment.rating} readOnly style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }} />
+                    <input type="text" placeholder="Comment Title *" value={newComment.title} onChange={e => setNewComment({ ...newComment, title: e.target.value })} required style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }} />
+                    <input type="text" placeholder="Name *" value={newComment.name} onChange={e => setNewComment({ ...newComment, name: e.target.value })} required style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }} />
+                    <input type="text" placeholder="Role" value={newComment.role} onChange={e => setNewComment({ ...newComment, role: e.target.value })} style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }} />
+                    <input type="url" placeholder="Image URL" value={newComment.image} onChange={e => setNewComment({ ...newComment, image: e.target.value })} style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }} />
                   </div>
                   <textarea
                     placeholder="Your comment *"
@@ -544,13 +575,15 @@ export default function EditVisitors() {
                     value={newComment.message}
                     onChange={e => setNewComment({ ...newComment, message: e.target.value })}
                     required
-                    style={{ width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '8px', border: '1px solid #444' }}
+                    style={{ width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '8px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }}
                   />
                   <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
                     <button type="submit" disabled={addingComment} style={{ padding: '0.75rem 2rem', background: 'var(--main-hover-color)', border: 'none', borderRadius: '5px', color: 'white' }}>
                       {addingComment ? 'Adding...' : 'Submit Comment'}
                     </button>
-                    <button type="button" onClick={() => setShowAddComment(false)} style={{ padding: '0.75rem 2rem', background: '#555', border: 'none', borderRadius: '5px', color: 'white' }}>
+                    <button type="button" onClick={() => {setShowAddComment(false)
+                      setReply(null)
+                    }} style={{ padding: '0.75rem 2rem', background: '#555', border: 'none', borderRadius: '5px', color: 'white' }}>
                       Cancel
                     </button>
                   </div>
@@ -1054,14 +1087,14 @@ export default function EditVisitors() {
 //               value={newComment?.name}
 //               onChange={(e) => setNewComment({ ...newComment, name: e.target.value })}
 //               required
-//               style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }}
+//               style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }}
 //             />
 //             <input
 //               type="text"
 //               placeholder="Role (e.g. CEO)"
 //               value={newComment?.role}
 //               onChange={(e) => setNewComment({ ...newComment, role: e.target.value })}
-//               style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }}
+//               style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }}
 //             />
           
 //             <input
@@ -1069,7 +1102,7 @@ export default function EditVisitors() {
 //               placeholder="Image URL (optional)"
 //               value={newComment?.image}
 //               onChange={(e) => setNewComment({ ...newComment, image: e.target.value })}
-//               style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444' }}
+//               style={{ padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }}
 //             />
 //             <div>
 //               <select
@@ -1078,7 +1111,7 @@ export default function EditVisitors() {
 //                   value={newComment?.rating}
 //                   required
 //                   defaultValue={"⭐⭐⭐⭐⭐"}
-//                   style={{ color: !newComment?.rating ? 'rgba(255,255,255, 0.4)' : '#fff', padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', width: '100%' }}
+//                   style={{ color: !newComment?.rating ? 'rgba(255,255,255, 0.4)' : '#fff', padding: '0.75rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)', width: '100%' }}
 //                    onChange={(e) => setNewComment({...newComment, rating: e.target.value})}
 //                 >
 //                   <option value="">Rating</option>
@@ -1096,7 +1129,7 @@ export default function EditVisitors() {
 //             value={newComment?.message}
 //             onChange={(e) => setNewComment({ ...newComment, message: e.target.value })}
 //             required
-//             style={{ height: '100px', width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '5px', border: '1px solid #444' }}
+//             style={{ height: '100px', width: '100%', marginTop: '1rem', padding: '1rem', borderRadius: '5px', border: '1px solid #444', background:'var(--sec-bgcolor)', color: 'var(--pure-white)' }}
 //           />
 //           <div style={{ marginTop: '1rem' }}>
 //             <button

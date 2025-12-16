@@ -181,7 +181,7 @@ export default async function handle(req, res) {
             updatedAt: pgBlog.updatedat
           };
 
-           if (blog && blog.comments && Array.isArray(blog.comments) && blog.comments.length > 0) {
+           if (blog && blog.comments && blog.comments.length > 0) {
           // Use for...of to await each comments query
           for (const revid of blog.comments) {
             try {
@@ -222,6 +222,13 @@ export default async function handle(req, res) {
                 }
                 Blogcommentss.push(commentsData);
               } else {
+      const updatedComments = blog.comments.filter(commentId => commentId !== revid);
+       await sql`
+              UPDATE blogs
+              SET comments = ${JSON.stringify(updatedComments)},
+                  updatedat = CURRENT_TIMESTAMP
+              WHERE id = ${blog._id}
+            `;
                 console.log(`comments ID ${revid} not found for Blog ${queryId}`);
               }
             } catch (commentsError) {
@@ -234,9 +241,8 @@ export default async function handle(req, res) {
       } catch (neonError) {
         console.log('Neon GET single failed:', neonError);
       }
-
-      console.log("Blogcommentss:", Blogcommentss);
-      return res.json(blog ? { success: true, data: blog, data1:Blogcommentss } : { success: false, message: "Blog not found" });
+      console.log(Blogcommentss.filter((em) => em.email === "makiayengue@gmail.com"));
+   return res.json(blog ? { success: true, data: blog, data1:Blogcommentss } : { success: false, message: "Blog not found" });
     } else {
       let blogs = [];
       try {

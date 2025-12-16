@@ -365,7 +365,7 @@ const router = useRouter()
             </td>
             <td>{formatDate(new Date(item.createdAt))}</td>
              <td >
-                          <a href={`/blogs/view/${item._id}`} className="text-blue-600 hover:underline w-100"> ">
+                          <a href={`/blogs/view/${item._id}`} className="text-blue-600 hover:underline w-100"> 
                            View
                           </a>
                           </td>

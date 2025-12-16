@@ -1,6 +1,18 @@
 import { neon } from '@neondatabase/serverless';
 import { v4 as uuidv4 } from 'uuid';
 
+const formatDate = (date) => {
+  if (!date || isNaN(date)) {
+    return '';
+  }
+  const options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour12: true
+  };
+  return new Intl.DateTimeFormat('en-US', options).format(date);
+};
 export default async function handle(req, res) {
   const { method } = req;
  const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use env if needed
@@ -139,6 +151,23 @@ console.log(req.body)
                 updatedat = CURRENT_TIMESTAMP
             WHERE id = ${projectId}
           `;
+           try{
+              await sql`
+            INSERT INTO notifications (type, model, dataid, title, message, createddate)
+            VALUES (
+              'add',
+              'Review',
+              ${reviewId},
+              'Review Submission Noted',
+              ${`User ${name} (email: ${email}) submitted a review (rating: ${rating}) for project "${project.title}" via our website on ${formatDate(new Date())}. Content: "${message}". Incorporate into performance metrics and initiate response protocols as necessary.`},
+              CURRENT_TIMESTAMP
+            )
+          `;
+        }
+        catch(error){
+  return res.status(404).json({ message: "Failed to create notification " });
+
+        }
     return res.json({ success: true, message: 'Review added by admin' });
   } catch (error) {
     console.error('Admin review error:', error);
