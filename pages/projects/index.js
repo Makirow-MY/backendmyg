@@ -381,7 +381,7 @@ console.log("Projects fetched:", projects, projectsWithReviews)
                         <td>{item.status}</td>
                         <td>{formatDate(new Date(item.createdAt))}</td>
                         <td>
-                          <a href={`/projects/view/${item._id}`} className="text-blue-600 hover:underline">
+                          <a href={`/projects/view/${item._id}`} className="text-blue-600 hover:underline w-100">
                             View
                           </a>
                         </td>

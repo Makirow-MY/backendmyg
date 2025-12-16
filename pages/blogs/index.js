@@ -365,11 +365,10 @@ const router = useRouter()
             </td>
             <td>{formatDate(new Date(item.createdAt))}</td>
              <td >
-                          <a href={`/blogs/view/${item._id}`} className="text-blue-600 hover:underline mr-1">
-                            Edit
+                          <a href={`/blogs/view/${item._id}`} className="text-blue-600 hover:underline w-100"> ">
+                           View
                           </a>
-                          <button className="p-2 buttonBTN" onClick={() => chooseDel(item._id)}><IoClose /></button>
-                        </td>
+                          </td>
           </tr>
                     ))
                 )
@@ -380,46 +379,7 @@ const router = useRouter()
         </div>
       </div>
 
-       {
-
-                    isDelete && !isloading && (
-                            <div className="deletesec">
-                                <div className="pot" >
-                                    <div className="deletecard">
-                                                    <p className="cookieHeading text-center">Are you sure you want to Delete this blog? </p>
-                                                    <p className="cookieDescription">blog title: <span>{productInfo?.title}</span></p>
-                                                    <p className="cookieDescription">Beware, this action can not be reverse</p>
-                                                    <div className="buttonContainer">
-                                                           <button className="acceptButton" onClick={() => {deletBlog(productInfo._id),
-                                                            setDelete(false), router.push('/blogs/process1')
-                                                           }}>Delete</button>
-                                                           <button className="declineButton" onClick={() => setDelete(false)}>Cancel</button>
-                                                    </div>
-                                    </div>
-                                                   </div>
-                            </div>
-                                                   
-                                 
-                    )
-     
-
-}
-
-       {
-
-                    isDelete && isloading && (
-                            <div className="deletesec">
-                                <div className="pot" >
-                                   <Spinner/>
-                                                   </div>
-                            </div>
-                                                   
-                                 
-                    )
-     
-
-}
-
+ 
 
     </LoginLayout>
   );
