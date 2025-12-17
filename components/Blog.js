@@ -75,7 +75,49 @@ export default function Blog({
       setTags(existingTags);
     }
   }, [existingImages, existingTags]);
-
+const [images, setImages] = useState(existingImages || []);
+   async function uploadToCloudinary(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'imaginify'); // Replace with your preset
+  
+      try {
+        const response = await axios.post(
+          'https://api.cloudinary.com/v1_1/dyf21ulbr/image/upload', // Replace 'your_cloud_name'
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }
+        );
+        return response.data.secure_url;
+      } catch (error) {
+        console.error('Cloudinary upload error:', error);
+        toast.error('Failed to upload image');
+        throw error;
+      }
+    }
+  
+    async function uploadImages(e) {
+      const files = Array.from(e.target.files);
+      if (!files.length) return toast.error('Please select files');
+      if ((images.length + files.length) > 10) return toast.error('Max 10 images');
+     toast.loading('Uploading images...');
+      setIsUploading(true);
+      try {
+        const newUrls = await Promise.all(files.map(uploadToCloudinary));
+        setImages(prev => [...prev, ...newUrls]);
+        toast.dismiss();
+        toast.success('Images uploaded');
+      } catch (error) {
+         toast.dismiss();
+       console.error('Upload error:', error);
+       toast.error('Error uploading images. Please try again.');
+      } finally {
+        setIsUploading(false);
+      }
+    }
+    
+    
   useEffect(() => {
     if (blogcategory) {
       setAvailableTags(TAGS_BY_CATEGORY[blogcategory] || []);
@@ -87,37 +129,22 @@ export default function Blog({
     e.preventDefault();
     if (isUploading) return;
 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('slug', slug);
-    formData.append('description', description);
-    formData.append('blogcategory', blogcategory);
-    formData.append('tags', JSON.stringify(tags));
-    formData.append('status', status || (title && slug && description && blogcategory && attachments.length > 0 ? 'publish' : 'draft'));
-
-    attachments.forEach((att) => {
-      if (att.file) {
-        formData.append('images', att.file);
-      } else if (att.url) {
-        formData.append('existingImages', att.url);
-      }
-    });
-
-    if (_id) {
-      formData.append('_id', _id);
-    }
+    const data = {
+      title, slug, price, description, blogcategory, 
+      status: status || (title && slug && description && blogcategory && attachments.length > 0 ? 'publish' : 'draft'),
+      tags: JSON.stringify(tags),
+       images: JSON.stringify(images), // Send URLs as JSON string
+    };
+     if (_id) data._id = _id;
 
     try {
       setIsUploading(true);
       const toastId = _id ? toast.loading("Updating Blog...") : toast.loading("Creating Blog...");
       const response = _id
-        ? await axios.put("/api/blogs", formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          })
-        : await axios.post("/api/blogs", formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-      toast.success(_id ? 'Blog updated' : 'Blog created!', { id: toastId });
+        ? await axios.put("/api/blogs", data)
+        : await axios.post("/api/blogs", data);
+        toast.dismiss();
+        toast.success(_id ? 'Blog updated' : 'Blog created!', { id: toastId });
       setRedirect(true);
     } catch (error) {
       toast.error(error.response?.data?.message || (_id ? 'Failed to update blog' : 'Failed to create blog'));
@@ -132,37 +159,22 @@ export default function Blog({
     return null;
   }
 
-  function uploadImages(e) {
-    const files = e.target?.files;
-    if (!files || files.length === 0) {
-      toast.error("Please select files to upload");
-      return;
-    }
-    if ((attachments.length + files.length) > 10) {
-      toast.error(`You can only upload at most 10 images`);
-      return;
-    }
-    setAttachments((prev) => [...prev, ...Array.from(files).map(file => ({ file, name: file.name }))]);
+
+ function deleteImage(url) {
+    setImages(prev => prev.filter(img => img !== url));
+    toast.success('Image removed');
   }
 
-  function deleteImage(image) {
-    setAttachments(prev => prev.filter(att => att.name !== image.name));
-    toast.success('Image removed successfully');
-  }
-
-  function handlePasteImage(e) {
+function handlePasteImage(e) {
     const pastedUrl = e.target.value.trim();
-    const urlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i;
+    const urlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))/i;
     if (pastedUrl && urlPattern.test(pastedUrl)) {
-      if (attachments.length >= 10) {
-        toast.error(`You can only upload at most 10 images`);
-        return;
-      }
-      setAttachments(prev => [...prev, { url: pastedUrl, name: pastedUrl.split('/').pop() }]);
-      setPasteImageUrl("");
-      toast.success('Image URL added successfully');
+      if (images.length >= 10) return toast.error('Max 10 images');
+      setImages(prev => [...prev, pastedUrl]);
+      setPasteImageUrl('');
+      toast.success('Image URL added');
     } else if (pastedUrl) {
-      toast.error('Please paste a valid image URL (png, jpg, jpeg, gif)');
+      toast.error('Invalid image URL');
     }
   }
 
@@ -262,38 +274,23 @@ export default function Blog({
           {uploadError && (
             <div className="upload-error">{uploadError}</div>
           )}
-          {attachments.length > 0 && (
-            <ReactSortable
-              list={attachments}
-              setList={setAttachments}
-              className='gap-1'
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}
-            >
-              {attachments.map((attachment, index) => (
-                <div key={index} className='uploadedimg'>
-                  <img
-                    loading='lazy'
-                    src={attachment.url || URL.createObjectURL(attachment.file)}
-                    alt={attachment.name}
-                    className='object-cover'
-                  />
-                  <div className='deleteimg'>
-                    <button
-                      type='button'
-                      onClick={() => deleteImage(attachment)}
-                    >
-                      <IoTrash />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </ReactSortable>
-          )}
-          {attachments.length === 0 && (
-            <div className='w-100 flex mt-1'>
-              <p>Uploaded or pasted images will appear here</p>
+           {images.length > 0 && (
+        <ReactSortable list={images} setList={setImages} className='gap-1' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          {images.map((url, index) => (
+            <div key={index} className='uploadedimg'>
+              <img loading='lazy' src={url} alt={`Image ${index}`} className='object-cover' />
+              <div className='deleteimg'>
+                <button type='button' onClick={() => deleteImage(url)}><IoTrash /></button>
+              </div>
             </div>
-          )}
+          ))}
+        </ReactSortable>
+      )}
+            {images.length === 0 && (
+              <div className='w-100 flex mt-1'>
+                <p>Uploaded or pasted images will appear here</p>
+              </div>
+            )}
         </div>
       </div>
       <div className='w-100 mb-2'>

@@ -97,6 +97,8 @@ export default function Project({
   const [uploadError, setUploadError] = useState(null);
   const [availableTags, setAvailableTags] = useState([]);
 
+  const [images, setImages] = useState(existingImages || []); // Array of URLs
+  
   useEffect(() => {
     if (existingImages && existingImages.length > 0) {
       setAttachments(existingImages.map(url => ({ url, name: url.split('/').pop() })));
@@ -106,6 +108,47 @@ export default function Project({
     }
   }, [existingImages, existingTags]);
 
+  async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'imaginify'); // Replace with your preset
+
+    try {
+      const response = await axios.post(
+        'https://api.cloudinary.com/v1_1/dyf21ulbr/image/upload', // Replace 'your_cloud_name'
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
+      return response.data.secure_url;
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      toast.error('Failed to upload image');
+      throw error;
+    }
+  }
+
+  async function uploadImages(e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return toast.error('Please select files');
+    if ((images.length + files.length) > 10) return toast.error('Max 10 images');
+   toast.loading('Uploading images...');
+    setIsUploading(true);
+    try {
+      const newUrls = await Promise.all(files.map(uploadToCloudinary));
+      setImages(prev => [...prev, ...newUrls]);
+      toast.dismiss();
+      toast.success('Images uploaded');
+    } catch (error) {
+       toast.dismiss();
+     console.error('Upload error:', error);
+     toast.error('Error uploading images. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  }
+  
   useEffect(() => {
     if (projectcategory) {
       setAvailableTags(TAGS_BY_CATEGORY[projectcategory] || []);
@@ -116,45 +159,28 @@ export default function Project({
   async function createBlog(e) {
     e.preventDefault();
     if (isUploading) return;
-
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('slug', slug);
-    formData.append('price', price);
-    formData.append('description', description);
-    formData.append('projectcategory', projectcategory);
-    formData.append('client', client);
-    formData.append('livepreview', livepreview);
-    formData.append('projectType', projectType);
-    formData.append('projectYear', projectYear);
-    formData.append('repositoryUrl', repositoryUrl);
-    formData.append('documentationUrl', documentationUrl);
-    formData.append('isResponsive', isResponsive);
-    formData.append('licenseType', licenseType);
-    formData.append('supportAvailable', supportAvailable);
-    formData.append('tags', JSON.stringify(tags));
-    formData.append('technologies', JSON.stringify(technologies));
-    formData.append('features', JSON.stringify(features));
-    formData.append('platforms', JSON.stringify(platforms));
-    formData.append('category_fields', JSON.stringify(categorySpecificFields));
-
-    attachments.forEach((att) => {
-      if (att.file) {
-        formData.append('images', att.file);
-      } else if (att.url) {
-        formData.append('existingImages', att.url);
-      }
-    });
-
+const data = {
+      title, slug, price, description, projectcategory, client, livepreview,
+      projectType, projectYear, repositoryUrl, documentationUrl,
+      isResponsive, licenseType, supportAvailable,
+      tags: JSON.stringify(tags),
+      technologies: JSON.stringify(technologies),
+      features: JSON.stringify(features),
+      platforms: JSON.stringify(platforms),
+      category_fields: JSON.stringify(categorySpecificFields),
+      images: JSON.stringify(images), // Send URLs as JSON string
+    };
+     if (_id) data._id = _id;
     try {
       if (_id) {
-        formData.append('_id', _id);
         toast.loading("Updating Project...");
-        await axios.put("/api/projects", formData);
+        await axios.put("/api/projects", data);
+        toast.dismiss();
         toast.success('Project updated');
+         setRedirect(true);
       } else {
         toast.loading("Creating Project...");
-        const res = await axios.post("/api/projects", formData);
+        const res = await axios.post("/api/projects", data);
         if (res.data && res.data.success){
           toast.dismiss();
         toast.success(res.data.message || 'Project created');
@@ -179,37 +205,34 @@ export default function Project({
     return null;
   }
 
-  function uploadImages(e) {
-    const files = e.target?.files;
-    if (!files || files.length === 0) {
-      toast.error("Please select files to upload");
-      return;
-    }
-    if ((attachments.length + files.length) > 10) {
-      toast.error(`You can only upload at most 10 images`);
-      return;
-    }
-    setAttachments((prev) => [...prev, ...Array.from(files).map(file => ({ file, name: file.name }))]);
+  // function uploadImages(e) {
+  //   const files = e.target?.files;
+  //   if (!files || files.length === 0) {
+  //     toast.error("Please select files to upload");
+  //     return;
+  //   }
+  //   if ((attachments.length + files.length) > 10) {
+  //     toast.error(`You can only upload at most 10 images`);
+  //     return;
+  //   }
+  //   setAttachments((prev) => [...prev, ...Array.from(files).map(file => ({ file, name: file.name }))]);
+  // }
+
+ function deleteImage(url) {
+    setImages(prev => prev.filter(img => img !== url));
+    toast.success('Image removed');
   }
 
-  function deleteImage(image) {
-    setAttachments(prev => prev.filter(att => att.name !== image.name));
-    toast.success('Image removed successfully');
-  }
-
-  function handlePasteImage(e) {
+function handlePasteImage(e) {
     const pastedUrl = e.target.value.trim();
-    const urlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/i;
+    const urlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))/i;
     if (pastedUrl && urlPattern.test(pastedUrl)) {
-      if (attachments.length >= 10) {
-        toast.error(`You can only upload at most 10 images`);
-        return;
-      }
-      setAttachments(prev => [...prev, { url: pastedUrl, name: pastedUrl.split('/').pop() }]);
-      setPasteImageUrl("");
-      toast.success('Image URL added successfully');
+      if (images.length >= 10) return toast.error('Max 10 images');
+      setImages(prev => [...prev, pastedUrl]);
+      setPasteImageUrl('');
+      toast.success('Image URL added');
     } else if (pastedUrl) {
-      toast.error('Please paste a valid image URL (png, jpg, jpeg, gif)');
+      toast.error('Invalid image URL');
     }
   }
 
@@ -412,9 +435,10 @@ export default function Project({
         }
         <div className='w-100 flex flex-col flex-left mb-2'>
           <label>Project Visuals* (Maximum 10 images)</label>
-          <div className='w-100' style={{ display: 'flex', gap: '1rem', flexShrink: '-1' }}>
-            <label className='fileInput' htmlFor='fileInput' style={{ flexShrink: 0 }}>
-              <FiUpload /> Upload Images<br />(Showcase your work)
+          <div className='w-100' style={{ display: 'flex', gap: '1rem', flexShrink: '0', flexWrap: 'nowrap', '&media': 'screen and (max-width: 768px)' ? 'column' : 'row', alignItems: 'center' }}>
+            <div className='fileInput'>
+            <label  htmlFor='fileInput' style={{ flexShrink: 0,display: 'flex',alignItems: 'center', flexDirection: 'column', justifyContent: 'center', }}>
+              <FiUpload /> Upload Images<br />
             </label>
             <input
               type='file'
@@ -425,37 +449,23 @@ export default function Project({
               multiple
               disabled={isUploading}
             />
+            </div>
             {uploadError && (
               <div className="upload-error">{uploadError}</div>
             )}
-            {attachments.length > 0 && (
-              <ReactSortable
-                list={attachments}
-                setList={setAttachments}
-                className='gap-1'
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}
-              >
-                {attachments.map((attachment, index) => (
-                  <div key={index} className='uploadedimg'>
-                    <img
-                      loading='lazy'
-                      src={attachment.url || URL.createObjectURL(attachment.file)}
-                      alt={attachment.name}
-                      className='object-cover'
-                    />
-                    <div className='deleteimg'>
-                      <button
-                        type='button'
-                        onClick={() => deleteImage(attachment)}
-                      >
-                        <IoTrash />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </ReactSortable>
-            )}
-            {attachments.length === 0 && (
+            {images.length > 0 && (
+        <ReactSortable list={images} setList={setImages} className='gap-1' style={{ display: 'flex', flexShrink: 0, alignItems:'center', justifyContent:'start', gap:'1rem', flexWrap:'wrap', width:'calc(100% - 200px)' }}>
+          {images.map((url, index) => (
+            <div key={index} className='uploadedimg'>
+              <img loading='lazy' src={url} alt={`Image ${index}`} className='object-cover' />
+              <div className='deleteimg'>
+                <button type='button' onClick={() => deleteImage(url)}><IoTrash /></button>
+              </div>
+            </div>
+          ))}
+        </ReactSortable>
+      )}
+            {images.length === 0 && (
               <div className='w-100 flex mt-1'>
                 <p>Uploaded or pasted images will appear here</p>
               </div>

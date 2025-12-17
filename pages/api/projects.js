@@ -48,8 +48,7 @@ const upload = multer({
 }).array('images', 10);
 
 // IMPORTANT: Disable built-in bodyParser so Multer can handle multipart/form-data
-export const config = { api: { bodyParser: false } };
-
+export const config = { api: { bodyParser: true } };
 export default async function handleproj(req, res) {
   const { method } = req;
 const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2jb0gb-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require'); // Use env if needed
@@ -280,58 +279,22 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
     }
   } else if (method === 'POST' || method === 'PUT') {
     // Handle POST and PUT with Multer for file uploads
-    upload(req, res, async (err) => {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          return res.status(400).json({ success: false, message: 'File size exceeds 20MB limit' });
-        } else if (err.code === 'LIMIT_FILE_COUNT') {
-          return res.status(400).json({ success: false, message: 'Maximum 10 files allowed' });
-        }
-        return res.status(400).json({ success: false, message: err.message });
-      } else if (err) {
-        return res.status(400).json({ success: false, message: err.message });
-      }
 
       // Parse fields
       const {
         title, slug, price, description, projectcategory, client, livepreview,
         projectType, projectYear, repositoryUrl, documentationUrl,
-        isResponsive, licenseType, supportAvailable, _id // For PUT
-      } = req.body;
+        isResponsive, licenseType, supportAvailable, _id, tags, technologies, features, platforms, category_fields,
+      images // Now a JSON string of URLs
+    } = req.body;
 
-      const tags = JSON.parse(req.body.tags || '[]');
-      const technologies = JSON.parse(req.body.technologies || '[]');
-      const features = JSON.parse(req.body.features || '[]');
-      const platforms = JSON.parse(req.body.platforms || '[]');
-      const categoryFields = JSON.parse(req.body.category_fields || '{}');
+    const parsedTags = JSON.parse(tags || '[]');
+    const parsedTechnologies = JSON.parse(technologies || '[]');
+    const parsedFeatures = JSON.parse(features || '[]');
+    const parsedPlatforms = JSON.parse(platforms || '[]');
+    const parsedCategoryFields = JSON.parse(category_fields || '{}');
+    const parsedImages = JSON.parse(images || '[]'); // Array of URLs
 
-      // Handle images
-      const existingImages = req.body.existingImages
-        ? Array.isArray(req.body.existingImages)
-          ? req.body.existingImages
-          : [req.body.existingImages]
-        : [];
-
-      const newImageUrls = [];
-      if (req.files && req.files.length > 0) {
-        console.log('Uploaded files:', req.files); // Now this will show files from frontend
-        for (const file of req.files) {
-          try {
-            const result = await cloudinary.v2.uploader.upload(file.path, {
-              folder: 'myportfolio',
-              public_id: `file_${Date.now()}`,
-              resource_type: 'auto'
-            });
-            newImageUrls.push(result.secure_url);
-            fs.unlinkSync(file.path); // Delete temp local file
-          } catch (error) {
-            console.log('Cloudinary upload error:', error);
-            // Continue, but you can add error handling
-          }
-        }
-      }
-
-      const images = [...existingImages, ...newImageUrls];
       const calcPrice = projectType === 'Showcase' ? 0 : price;
       const calcLicenseType = projectType === 'Showcase' ? '' : licenseType;
       const status = (title && slug && description && projectcategory && projectcategory !== "Graphic & UI/UX Design" && images.length > 0) ? 'publish' : projectcategory && projectcategory === "Graphic & UI/UX Design" ? 'publish' : 'draft';
@@ -340,17 +303,17 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
         const id = uuidv4();
         try {
           await sql`
-            INSERT INTO projects (
-              id, title, slug, images, client, description, projectcategory, tags, livepreview, status, price,
-              projecttype, technologies, features, platforms, projectyear, repositoryurl, documentationurl,
-              isresponsive, licensetype, supportavailable, category_fields
-            ) VALUES (
-              ${id}, ${title}, ${slug}, ${JSON.stringify(images)}::jsonb, ${client}, ${description}, ${projectcategory},
-              ${JSON.stringify(tags)}::jsonb, ${livepreview}, ${status}, ${calcPrice}, ${projectType},
-              ${JSON.stringify(technologies)}::jsonb, ${JSON.stringify(features)}::jsonb,
-              ${JSON.stringify(platforms)}::jsonb, ${projectYear}, ${repositoryUrl}, ${documentationUrl},
-              ${isResponsive}, ${calcLicenseType}, ${supportAvailable}, ${JSON.stringify(categoryFields)}::jsonb
-            )`;
+          INSERT INTO projects (
+            id, title, slug, images, client, description, projectcategory, tags, livepreview, status, price,
+            projecttype, technologies, features, platforms, projectyear, repositoryurl, documentationurl,
+            isresponsive, licensetype, supportavailable, category_fields
+          ) VALUES (
+            ${id}, ${title}, ${slug}, ${JSON.stringify(parsedImages)}::jsonb, ${client}, ${description}, ${projectcategory},
+            ${JSON.stringify(parsedTags)}::jsonb, ${livepreview}, ${status}, ${calcPrice}, ${projectType},
+            ${JSON.stringify(parsedTechnologies)}::jsonb, ${JSON.stringify(parsedFeatures)}::jsonb,
+            ${JSON.stringify(parsedPlatforms)}::jsonb, ${projectYear}, ${repositoryUrl}, ${documentationUrl},
+            ${isResponsive}, ${calcLicenseType}, ${supportAvailable}, ${JSON.stringify(parsedCategoryFields)}::jsonb
+          )`;
           try {
             await sql`
               INSERT INTO notifications (
@@ -375,25 +338,25 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
             UPDATE projects SET
               title = ${title},
               slug = ${slug},
-              images = ${JSON.stringify(images)}::jsonb,
+              images = ${JSON.stringify(parsedImages)}::jsonb,
               client = ${client},
               description = ${description},
               projectcategory = ${projectcategory},
-              tags = ${JSON.stringify(tags)}::jsonb,
+              tags = ${JSON.stringify(parsedTags)}::jsonb,
               livepreview = ${livepreview},
               status = ${status},
               price = ${calcPrice},
               projecttype = ${projectType},
-              technologies = ${JSON.stringify(technologies)}::jsonb,
-              features = ${JSON.stringify(features)}::jsonb,
-              platforms = ${JSON.stringify(platforms)}::jsonb,
+              technologies = ${JSON.stringify(parsedTechnologies)}::jsonb,
+              features = ${JSON.stringify(parsedFeatures)}::jsonb,
+              platforms = ${JSON.stringify(parsedPlatforms)}::jsonb,
               projectyear = ${projectYear},
               repositoryurl = ${repositoryUrl},
               documentationurl = ${documentationUrl},
               isresponsive = ${isResponsive},
               licensetype = ${calcLicenseType},
               supportavailable = ${supportAvailable},
-              category_fields = ${JSON.stringify(categoryFields)}::jsonb,
+              category_fields = ${JSON.stringify(parsedCategoryFields)}::jsonb,
               updatedat = CURRENT_TIMESTAMP
             WHERE id = ${_id}
           `;
@@ -414,7 +377,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
           return res.status(500).json({ success: false, message: `Neon update failed: ${neonError.message}` });
         }
       }
-    });
+   
   } else {
     return res.status(405).json({ success: false, message: "Method not allowed" });
   }
