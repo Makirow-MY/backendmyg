@@ -367,6 +367,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
         } catch (neonError) {
           return res.status(500).json({ success: false, message: `Neon insert failed: ${neonError.message}` });
         }
+        
       } else if (method === 'PUT') {
         if (!_id) return res.status(400).json({ success: false, message: "Project ID required" });
         try {

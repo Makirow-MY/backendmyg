@@ -154,14 +154,24 @@ export default function Project({
         toast.success('Project updated');
       } else {
         toast.loading("Creating Project...");
-        await axios.post("/api/projects", formData);
-        toast.success('Project created!');
+        const res = await axios.post("/api/projects", formData);
+        if (res.data && res.data.success){
+          toast.dismiss();
+        toast.success(res.data.message || 'Project created');
+         setRedirect(true);
       }
-      setRedirect(true);
+      else {
+        toast.dismiss();
+        toast.error(res.data.message || 'Error creating project');
+      }
+    }
+   
     } catch (error) {
+      toast.dismiss();
       toast.error(error.response?.data?.message || 'Error saving project');
       console.log('Save error:', error);
     }
+    
   }
 
   if (redirect) {
