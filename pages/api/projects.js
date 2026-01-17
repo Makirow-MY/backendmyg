@@ -138,7 +138,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
                 }
                 ProjectReviews.push(reviewData);
               } else {
-                console.log(`Review ID ${revid} not found for project ${queryId}`);
+                //console.log(`Review ID ${revid} not found for project ${queryId}`);
               }
             } catch (reviewError) {
               console.error(`Error fetching review ID ${revid}:`, reviewError);
@@ -148,10 +148,9 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
         
           }
         } catch (neonError) {
-          console.log('Neon GET single failed:', neonError);
+          //console.log('Neon GET single failed:', neonError);
         }
-        console.log("ProjectReviews", ProjectReviews)
-       
+        
         return res.json(project ? { success: true, data: project, data1: ProjectReviews } : { success: false, message: "Project not found" });
       } else {
         let projects = [];
@@ -184,10 +183,9 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
             updatedAt: pgProject.updatedat,
           }));
         } catch (neonError) {
-          console.log('Neon GET all failed:', neonError);
+          //console.log('Neon GET all failed:', neonError);
          }
-          console.log("PG Projects:", projects);
-       
+        
         return res.json({ success: true, data: projects });
       }
     } else if (method === 'DELETE') {
@@ -236,10 +234,10 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
             )`;
           res.json({ success: true, message: "Project deleted Successfully" });
         } catch (neonNotifError) {
-          console.log('Neon notification insert failed:', neonNotifError);
+          //console.log('Neon notification insert failed:', neonNotifError);
         }
       } catch (neonError) {
-        console.log('Neon delete failed:', neonError);
+        //console.log('Neon delete failed:', neonError);
       }
       // Refetch projects (unchanged)
       let projects = [];
@@ -273,7 +271,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
         
         }));
       } catch (neonError) {
-        console.log('Neon GET all after delete failed:', neonError);
+        //console.log('Neon GET all after delete failed:', neonError);
       }
       return res.json({ success: true, data: projects });
     }
@@ -324,7 +322,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
                 CURRENT_TIMESTAMP
               )`;
           } catch (neonNotifError) {
-            console.log('Neon notification insert failed:', neonNotifError);
+            //console.log('Neon notification insert failed:', neonNotifError);
           }
           return res.json({ success: true, message: "Project created Successfully" });
         } catch (neonError) {
@@ -370,7 +368,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
                 CURRENT_TIMESTAMP
               )`;
           } catch (neonNotifError) {
-            console.log('Neon notification insert failed:', neonNotifError);
+            //console.log('Neon notification insert failed:', neonNotifError);
           }
           return res.json({ success: true, message: "Project updated Successfully" });
         } catch (neonError) {

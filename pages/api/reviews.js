@@ -88,7 +88,7 @@ export default async function handle(req, res) {
         createdAt: review.createdat,
         updatedAt: review.updatedat
       }));
- console.log("updatedComments",mappedReviews, "mappedReviews");
+ //console.log("updatedComments",mappedReviews, "mappedReviews");
       return res.json(mappedReviews);
     }
     if(method === 'POST') {
@@ -114,7 +114,7 @@ export default async function handle(req, res) {
   try {
     const reviewId = uuidv4();
     const finalImage = image || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
-console.log(req.body)
+//console.log(req.body)
  const [project] = await sql`SELECT * FROM projects WHERE id = ${projectId}`;
           if (!project) {
             return res.status(404).json({ message: " No Project Found " });

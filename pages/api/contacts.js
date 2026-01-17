@@ -135,7 +135,7 @@ export default async function handlecont(req, res) {
         createdAt: c.createdat,
         updatedAt: c.updatedat
       }));
-      console.log("contacts", contacts, "contacts");
+     // console.log("contacts", contacts, "contacts");
       return res.json({ success: true, data: contacts });
     }
     return res.status(405).json({ message: 'Method not allowed' });

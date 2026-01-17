@@ -50,7 +50,7 @@ export default async function handle(req, res) {
                         };
                     }
                 } catch (neonError) {
-                   console.log('Neon GET single failed:', neonError);
+                   //console.log('Neon GET single failed:', neonError);
                 }
              
                 if (!comment) {
@@ -86,9 +86,9 @@ export default async function handle(req, res) {
                         updatedAt: pgComment.updatedat
                     }));
 
-                    console.log("pgComments",comments)
+                    //console.log("pgComments",comments)
                 } catch (neonError) {
-                    console.log('Neon GET all commmments failed:', neonError);
+                    //console.log('Neon GET all commmments failed:', neonError);
                    //omments = await Comment.find().sort({ createdAt: 1 });
                 }
 
@@ -101,14 +101,14 @@ export default async function handle(req, res) {
                             blogExists = true;
                         }
                     } catch (neonError) {
-                       console.log('Neon blog check failed:', neonError);
+                       //console.log('Neon blog check failed:', neonError);
                     }
                     
                     if (!blogExists) {
                         try {
                             await sql`DELETE FROM comments WHERE id = ${comment._id}`;
                         } catch (neonError) {
-                           console.log('Neon delete comment failed:', neonError);
+                           //console.log('Neon delete comment failed:', neonError);
                         }
                        //wait Comment.deleteOne({ _id: comment._id });
                     }
@@ -137,21 +137,21 @@ export default async function handle(req, res) {
                     }));
                   
                 } catch (neonError) {
-                    console.log('Neon GET updated failed:', neonError);
+                    //console.log('Neon GET updated failed:', neonError);
                     //datedComments = await Comment.find().sort({ createdAt: -1 });
                 }
                
                 return res.status(200).json( updatedComments);
             }
         } catch (error) {
-           console.log("Error fetching comments:", error);
+           //console.log("Error fetching comments:", error);
             return res.status(500).json({ success: false, message: "Failed to fetch comments" });
         }
     } 
     else if (method === 'POST'){
       try {
         const { name, title, slug, image, email, contentPera, mainComment, parent} = req.body;
-console.log({ name, title, slug, image, email, contentPera, mainComment, parent})
+//console.log({ name, title, slug, image, email, contentPera, mainComment, parent})
 
         if (name && title && slug && email && contentPera ) {
           let blog = null;
@@ -176,7 +176,7 @@ console.log({ name, title, slug, image, email, contentPera, mainComment, parent}
               return res.status(404).json({ message: " No Blog Found " });
             }
           } catch (neonError) {
-            console.log('Neon GET single failed:', neonError);
+            //console.log('Neon GET single failed:', neonError);
             return res.status(500).json({
               error: true,
               message: `Failed to retrieve that particular data`
@@ -431,7 +431,7 @@ console.log({ name, title, slug, image, email, contentPera, mainComment, parent}
 
             return res.status(200).json({ success: true, message: "Comment deleted successfully" });
         } catch (error) {
-            console.log("Error deleting comment:", error);
+            //console.log("Error deleting comment:", error);
             return res.status(500).json({ success: false, message: "Failed to delete comment" });
         }
     } else {
