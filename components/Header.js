@@ -58,16 +58,10 @@ export default function Header({ onToggleSidebar, isOpen, setSearch, search }) {
         if (response.data.success && response.data.data > 0) {
           setUnreadCount(response.data.data);
         }
-    //     axios.get('/api/notification?unread=' + true).then(res => {
-    //                  console.log("id", id, "res", res);
-    // toast.success(response.data.message);
-    //                })
-    //   } catch (error) {
-    //     toast.error('Error fetching unread count:', error);
-     //}
+   
 }
 catch (error) {
-    //  toast.error('Error fetching notifications');
+              setUnreadCount(0);
 }
     }
     fetchData();
@@ -102,7 +96,7 @@ catch (error) {
       <>
         <header className="header">
           <div className="header-left">
-            <h1 className="logo " onClick={() => router.push('/')}>MYG Tech</h1>
+            <h1 className="logo " onClick={() => router.push('/')}>{active} MYG Tech</h1>
             <div className="flex gap-1">
               {isdet1 && <IoClose className="noti" onClick={() => setIsdet1(!isdet1)} />}
               <IoMenu className="noti" onClick={onToggleSidebar} />
@@ -141,8 +135,8 @@ catch (error) {
               </div>
 
               {!isdet1 && search == '' && <FiSearch className="noti dide" onClick={() => setIsdet1(true)} />}
-              {dark && <FaMoon onClick={ToggleMode} className="noti" />}
-              {!dark && <FaSun onClick={ToggleMode} className="noti" />}
+              {!dark && <FaMoon onClick={ToggleMode} className="noti" />}
+              {dark && <FaSun onClick={ToggleMode} className="noti" />}
 
               <div className="notification-wrapper relative cursor"
               onClick={() => router.push('/notification')}
