@@ -159,12 +159,7 @@ export default async function handle(req, res) {
       }
     });
   } else if (method === "GET") {
-    if (req.query?.id || req.query?.blogId) {
-      await sql`
-        DELETE FROM blogs 
-        WHERE updatedat < NOW() - INTERVAL '59 days'
-        RETURNING id
-      `;
+    if (req.query?.id || req.query?.blogId) {     
       const queryId = req.query.id || req.query.blogId;
       let blog = null;
         let Blogcommentss = []; 
@@ -249,6 +244,11 @@ export default async function handle(req, res) {
       console.log(Blogcommentss.filter((em) => em.email === "makiayengue@gmail.com"));
    return res.json(blog ? { success: true, data: blog, data1:Blogcommentss } : { success: false, message: "Blog not found" });
     } else {
+       await sql`
+        DELETE FROM blogs 
+        WHERE updatedat < NOW() - INTERVAL '59 days'
+        RETURNING id
+      `;
       let blogs = [];
       try {
         const pgBlogs = await sql `SELECT * FROM blogs ORDER BY createdat DESC`;
