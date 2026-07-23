@@ -127,6 +127,7 @@ const formatDate = (date) => {
       projectTitle: contactInfo.title,
       projectSlug: contactInfo.slug,
       ...newReview,
+      rating: newReview.rating?.length,
       image: newReview.image || `https://ui-avatars.com/api/?name=${newReview.name}&background=random`
     });
 
