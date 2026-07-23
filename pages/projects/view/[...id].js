@@ -127,7 +127,6 @@ const formatDate = (date) => {
       projectTitle: contactInfo.title,
       projectSlug: contactInfo.slug,
       ...newReview,
-      rating: newReview.rating?.length,
       image: newReview.image || `https://ui-avatars.com/api/?name=${newReview.name}&background=random`
     });
 
@@ -451,7 +450,7 @@ const formatDate = (date) => {
                       </div>
                       <div className="flex">
                         <p   style={{alignItems:'center'}}>
-                      <span className="cosmic-text" >{StarRating(review.rating.length / 2)}</span>
+                      <span className="cosmic-text" >{StarRating(review.rating.length)}</span>
                        <span className="cosmic-text text-right w-full">{formatDate(new Date(review.createdAt))}</span>
                     </p>
                       {review.image && (
