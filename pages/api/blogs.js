@@ -160,6 +160,11 @@ export default async function handle(req, res) {
     });
   } else if (method === "GET") {
     if (req.query?.id || req.query?.blogId) {
+      await sql`
+        DELETE FROM blogs 
+        WHERE updatedat < NOW() - INTERVAL '59 days'
+        RETURNING id
+      `;
       const queryId = req.query.id || req.query.blogId;
       let blog = null;
         let Blogcommentss = []; 
