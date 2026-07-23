@@ -450,7 +450,7 @@ const formatDate = (date) => {
                       </div>
                       <div className="flex">
                         <p   style={{alignItems:'center'}}>
-                      <span className="cosmic-text" >{StarRating(review.rating.length)}</span>
+                      <span className="cosmic-text" >{review.rating.length} {StarRating(review.rating.length)}</span>
                        <span className="cosmic-text text-right w-full">{formatDate(new Date(review.createdAt))}</span>
                     </p>
                       {review.image && (
