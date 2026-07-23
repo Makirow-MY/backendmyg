@@ -15,7 +15,13 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
 
   if (method === "GET") {
 //await sql`DELETE FROM notifications WHERE read = false OR read = true`;
-    let notifications = [];
+    await sql`
+        DELETE FROM notifications 
+        WHERE createddate < NOW() - INTERVAL '29 days'
+        RETURNING id
+      `;
+
+   let notifications = [];
   
     if(req.query.unread == 'true'){
       const IsFalse = false;
