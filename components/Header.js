@@ -96,7 +96,7 @@ catch (error) {
       <>
         <header className="header">
           <div className="header-left">
-            <h1 className="logo " onClick={() => router.push('/')}>{active} MYG Tech</h1>
+            <h1 className="logo " onClick={() => router.push('/')}> MYcoder</h1>
             <div className="flex gap-1">
               {isdet1 && <IoClose className="noti" onClick={() => setIsdet1(!isdet1)} />}
               <IoMenu className="noti" onClick={onToggleSidebar} />
@@ -143,7 +143,7 @@ catch (error) {
                >
                 <IoNotifications className="noti" />
                 {
-                unreadCount > 0 && <span className="unread-badge">{unreadCount > 999 ?
+                unreadCount > 0 && active !== "/notification"&& <span className="unread-badge">{unreadCount > 999 ?
                   Math.floor
                   (unreadCount / 1000)
                    + 'K' : unreadCount
