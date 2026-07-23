@@ -17,7 +17,7 @@ const sql = neon('postgresql://neondb_owner:npg_P6GLxeoWFS5u@ep-curly-heart-ae2j
 //await sql`DELETE FROM notifications WHERE read = false OR read = true`;
     await sql`
         DELETE FROM notifications 
-        WHERE createddate < NOW() - INTERVAL '29 days'
+        WHERE createddate < NOW() - INTERVAL '59 days'
         RETURNING id
       `;
 
