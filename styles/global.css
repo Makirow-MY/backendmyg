@@ -1068,7 +1068,9 @@ td{
                 }
 
 
-
+.noti{
+    background: var(--sec-bgcolor) !important;
+}
 
 
 
