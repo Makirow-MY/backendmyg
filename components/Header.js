@@ -141,7 +141,7 @@ catch (error) {
               <div className="notification-wrapper relative cursor"
               onClick={() => router.push('/notification')}
                >
-                <IoNotifications className="noti" style="background: var(--main-bgcolor);" />
+                <IoNotifications className="noti" style="background: var(--sec-bgcolor);" />
                 {
                 unreadCount > 0 && active !== "/notification"&& <span className="unread-badge">{unreadCount > 999 ?
                   Math.floor
