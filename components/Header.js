@@ -131,17 +131,17 @@ catch (error) {
           {!isdet1 && (
             <div className="header-right">
               <div className="fullscreen-icon" onClick={toggleFullscreen}>
-                {isFull ? <BiExitFullscreen /> : <GoScreenFull />}
+                {isFull ? <BiExitFullscreen  className="noti dide" style="background: var(--main-bgcolor);" /> : <GoScreenFull  className="noti dide" style="background: var(--main-bgcolor);" />}
               </div>
 
-              {!isdet1 && search == '' && <FiSearch className="noti dide" onClick={() => setIsdet1(true)} />}
-              {!dark && <FaMoon onClick={ToggleMode} className="noti" />}
-              {dark && <FaSun onClick={ToggleMode} className="noti" />}
+              {!isdet1 && search == '' && <FiSearch className="noti dide" style="background: var(--main-bgcolor);" onClick={() => setIsdet1(true)} />}
+              {!dark && <FaMoon onClick={ToggleMode} className="noti" style="background: var(--main-bgcolor);" />}
+              {dark && <FaSun onClick={ToggleMode} className="noti" style="background: var(--main-bgcolor);" />}
 
               <div className="notification-wrapper relative cursor"
               onClick={() => router.push('/notification')}
                >
-                <IoNotifications className="noti" />
+                <IoNotifications className="noti" style="background: var(--main-bgcolor);" />
                 {
                 unreadCount > 0 && active !== "/notification"&& <span className="unread-badge">{unreadCount > 999 ?
                   Math.floor
