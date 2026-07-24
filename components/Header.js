@@ -99,7 +99,7 @@ catch (error) {
             <h1 className="logo " onClick={() => router.push('/')}> MYcoder</h1>
             <div className="flex gap-1">
               {isdet1 && <IoClose className="noti" onClick={() => setIsdet1(!isdet1)} />}
-              <IoMenu className="noti" style="background: var(--sec-bgcolor);" onClick={onToggleSidebar} />
+              <IoMenu className="noti" onClick={onToggleSidebar} />
             </div>
           </div>
           <form className="search-form" onSubmit={(e) => e.preventDefault()}>
@@ -131,17 +131,17 @@ catch (error) {
           {!isdet1 && (
             <div className="header-right">
               <div className="fullscreen-icon" onClick={toggleFullscreen}>
-                {isFull ? <BiExitFullscreen  className="noti dide" style="background: var(--sec-bgcolor);" /> : <GoScreenFull  className="noti dide" style="background: var(--sec-bgcolor);" />}
+                {isFull ? <BiExitFullscreen  className="noti dide"  /> : <GoScreenFull  className="noti dide" />}
               </div>
 
-              {!isdet1 && search == '' && <FiSearch className="noti dide" style="background: var(--sec-bgcolor);" onClick={() => setIsdet1(true)} />}
-              {!dark && <FaMoon onClick={ToggleMode} className="noti" style="background: var(--sec-bgcolor);" />}
-              {dark && <FaSun onClick={ToggleMode} className="noti" style="background: var(--sec-bgcolor);" />}
+              {!isdet1 && search == '' && <FiSearch className="noti dide" onClick={() => setIsdet1(true)} />}
+              {!dark && <FaMoon onClick={ToggleMode} className="noti"  />}
+              {dark && <FaSun onClick={ToggleMode} className="noti"  />}
 
               <div className="notification-wrapper relative cursor"
               onClick={() => router.push('/notification')}
                >
-                <IoNotifications className="noti" style="background: var(--sec-bgcolor);" />
+                <IoNotifications className="noti"  />
                 {
                 unreadCount > 0 && active !== "/notification"&& <span className="unread-badge">{unreadCount > 999 ?
                   Math.floor
